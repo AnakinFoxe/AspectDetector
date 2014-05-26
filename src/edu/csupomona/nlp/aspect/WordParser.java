@@ -11,8 +11,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import edu.csupmona.nlp.ml.NaiveBayes;
-import edu.csupmona.nlp.ml.NaiveBayesResult;
+import edu.csupomona.nlp.ml.NaiveBayes;
+import edu.csupomona.nlp.ml.NaiveBayesResult;
 import edu.csupomona.nlp.utils.MapUtil;
 import edu.csupomona.nlp.utils.SemanticSimilarity;
 import edu.csupomona.nlp.utils.StanfordTools;

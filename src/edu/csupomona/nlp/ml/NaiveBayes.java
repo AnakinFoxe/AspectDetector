@@ -1,4 +1,4 @@
-package edu.csupmona.nlp.ml;
+package edu.csupomona.nlp.ml;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -1,4 +1,4 @@
-package edu.csupmona.nlp.ml;
+package edu.csupomona.nlp.ml;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

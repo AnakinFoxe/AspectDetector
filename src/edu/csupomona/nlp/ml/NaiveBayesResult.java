@@ -1,4 +1,4 @@
-package edu.csupmona.nlp.ml;
+package edu.csupomona.nlp.ml;
 
 public class NaiveBayesResult {
 	private String label;

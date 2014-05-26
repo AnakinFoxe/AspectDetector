@@ -1,4 +1,4 @@
-package edu.csupmona.nlp.ml;
+package edu.csupomona.nlp.ml;
 import java.util.List;
 
 import edu.csupomona.nlp.aspect.BigramAspect;
