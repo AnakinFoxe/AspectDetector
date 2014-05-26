@@ -104,7 +104,7 @@ public class StanfordTools {
 		for(CoreMap sentence: sentences) {			
 			SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 			
-//			System.out.println(dependencies.toString("plain"));
+			System.out.println(dependencies.toString("plain"));
         }
 	}
 	
