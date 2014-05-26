@@ -12,8 +12,11 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations.AnnotatedTree;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 
@@ -93,15 +96,21 @@ public class StanfordTools {
 		return list;
 	}
 	
+	public static void parser(String line) {
+		Annotation document = new Annotation(line);
+		pipeline.annotate(document);
+		
+		List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+		for(CoreMap sentence: sentences) {			
+			SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			
+//			System.out.println(dependencies.toString("plain"));
+        }
+	}
 	
-//	public static void main(String[] args) {
+//	public static void main(String args[]) {
 //		StanfordTools.init();
-//		
-//		List<String[]> list = posTag("Great Nokia Construction    Nokia   amazing job  plastics");
-//		
-//		for (String[] word: list) {
-//			System.out.println(word[0] + ":" + word[1]);
-//		}
+//		StanfordTools.parser("The camera is very good, so is the signal.");
 //	}
 
 }
