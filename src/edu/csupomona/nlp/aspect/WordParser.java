@@ -85,7 +85,7 @@ public class WordParser {
 	}
 
 	public void storeData(String outputPath) throws IOException{
-		aspectParser.writeBigrams(outputPath);
+		aspectParser.writeData(outputPath);
 	}
 	
 	public List<BigramAspect> selectBigrams(Integer featNum) {

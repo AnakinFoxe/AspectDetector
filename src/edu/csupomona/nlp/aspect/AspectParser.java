@@ -136,6 +136,7 @@ public class AspectParser {
 			}
 		}
 		
+		// added for finding local unigram/bigram/trigram
 		parseWindow(words);
 	}
 	
@@ -274,34 +275,59 @@ public class AspectParser {
 	 * @param filename
 	 * @throws IOException
 	 */
-	public void writeBigrams(String filename) throws IOException {
+	public void writeData(String filename) throws IOException {
 		// TODO Auto-generated method stub
-		FileWriter writer = new FileWriter(filename);
+//		FileWriter writer = new FileWriter(filename);
+//		BufferedWriter writerBW = new BufferedWriter(writer);
+//		String bigram;
+//		Set<String> keySet = frequencyMap.keySet();
+//		Iterator<String> keyIter = keySet.iterator();
+//		while(keyIter.hasNext()){
+//			bigram = keyIter.next();
+//			boolean haveAspect = false;
+//			for(int i=0; i < aspectList.size()-1; i++){
+//				List<String> aspect = aspectList.get(i);
+//				for (int j = 0; j < aspect.size(); j++) {
+//					if(bigram.contains(aspect.get(j))){
+//						haveAspect = true;
+//					}
+//				}
+//			}
+//			
+//			if(!haveAspect){ //only write the bigram if does not contain the aspect
+//				List<Integer> aspectFrequency = frequencyMap.get(bigram);
+//				String freqList = aspectFrequency.toString();
+//				String aspectBigram = bigram+","+freqList.substring(1, freqList.length()-1)+"\n";
+//				writerBW.write(aspectBigram);
+//			}
+//		}
+//		writerBW.close();
+		
+		writeFrequencyMap(frequencyMap, "global-bigram", filename, false);
+		writeFrequencyMap(frequencyMap2, "local-unigram", filename, true);
+		writeFrequencyMap(frequencyMap3, "local-bigram", filename, true);
+		writeFrequencyMap(frequencyMap4, "local-trigram", filename, true);
+	}
+	
+	public void writeFrequencyMap(HashMap<String, List<Integer>> freqMap, 
+								  String prefix,
+								  String filename, 
+								  boolean append) throws IOException {
+		FileWriter writer = new FileWriter(filename, append);
 		BufferedWriter writerBW = new BufferedWriter(writer);
-		String bigram;
-		Set<String> keySet = frequencyMap.keySet();
-		Iterator<String> keyIter = keySet.iterator();
-		while(keyIter.hasNext()){
-			bigram = keyIter.next();
-			boolean haveAspect = false;
-			for(int i=0; i < aspectList.size()-1; i++){
-				List<String> aspect = aspectList.get(i);
-				for (int j = 0; j < aspect.size(); j++) {
-					if(bigram.contains(aspect.get(j))){
-						haveAspect = true;
-					}
-				}
-			}
-			
-			if(!haveAspect){ //only write the bigram if does not contain the aspect
-				List<Integer> aspectFrequency = frequencyMap.get(bigram);
-				String freqList = aspectFrequency.toString();
-				String aspectBigram = bigram+","+freqList.substring(1, freqList.length()-1)+"\n";
-				writerBW.write(aspectBigram);
-			}
+		String ngram;
+		
+		Iterator<String> keyIter = freqMap.keySet().iterator();
+		while (keyIter.hasNext()) {
+			ngram = keyIter.next();
+			String freqList = freqMap.get(ngram).toString();
+			writerBW.write(prefix + "," 
+						  + ngram + ","
+						  + freqList.substring(1, freqList.length()-1) + "\n");
 		}
 		writerBW.close();
 	}
+	
 	
 	public void loadAspectFrequency(String filename) throws IOException{
 		FileReader bigramFileReader = new FileReader(filename);
