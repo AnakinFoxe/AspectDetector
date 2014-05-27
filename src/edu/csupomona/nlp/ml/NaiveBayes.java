@@ -24,29 +24,34 @@ public class NaiveBayes {
 	}
 	
 	public void loadAspectFrequency(AspectParser aspectParser){
-		frequencyMap = aspectParser.getFrequencyMap();
+		// aspect list
 		aspectList = new ArrayList<String>();
 		List<List<String>> aLists = aspectParser.getAspectList();
-		aspectWordSum = new int[aLists.size()];
-		aspectSentence = new int[aLists.size()];
-		for(int i = 0; i < aLists.size(); i++){
+		for(int i = 0; i < aLists.size()-2; i++){	// -2
 			List<String> aspectSyn = aLists.get(i);
 			String aspect = aspectSyn.get(0);
 			aspectList.add(aspect);
 		}
+		aspectList.add("all");		// label: all
+		aspectList.add("other");	// label: other
 		
-		Set<String> keySet = frequencyMap.keySet();
-		for(String bigram : keySet){
+		// sentences belong to each aspect, and total count
+		aspectSentence = aspectParser.getAspectSentences();
+		for(int count : aspectSentence){
+			sentenceTotal+=count;
+		}
+		
+		// bigram count for each aspect
+		aspectWordSum = new int[aLists.size()];
+		frequencyMap = aspectParser.getFrequencyMap();
+		for(String bigram : frequencyMap.keySet()){
 			List<Integer> counts = frequencyMap.get(bigram);
 			for(int i = 0; i < counts.size(); i++){
 				aspectWordSum[i]+=counts.get(i);
 			}
 		}
 		
-		aspectSentence = aspectParser.getAspectSentences();
-		for(int count : aspectSentence){
-			sentenceTotal+=count;
-		}
+		
 		
 	}
 	
@@ -64,9 +69,25 @@ public class NaiveBayes {
 		int bigramSize = frequencyMap.size();
 		int givenTotal = aspectWordSum[aspectIndex];
 		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)bigramSize);
-//		System.out.println(feature + "+" + given + ": " + featureCount + "=>" + laplaceProb);
 		return laplaceProb;	
 	}
+	
+	/**
+	 * find the probability of a unigram given it resides near a certain aspect
+	 * @param feature
+	 * @param given
+	 * @return
+	 */
+//	private double unigramLocalProb(String feature, String given){
+//		
+//		List<Integer> count = frequencyMap2.get(feature); // (frequencyMap.get(feature)==null)?null:
+//		int aspectIndex = aspectList.indexOf(given);
+//		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
+//		int unigramSize = frequencyMap2.size();
+//		int givenTotal = aspectWordSum[aspectIndex];
+//		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)unigramSize);
+//		return laplaceProb;	
+//	}
 	
 	/**
 	 * find the probability a sentence belongs to a certain aspect
@@ -82,7 +103,7 @@ public class NaiveBayes {
 		if(words.length > 0){
 			String prevWord = words[0];
 			String bigram;
-			sentenceProb = aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
+			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
 			for(int i=1; i < words.length; i++){
 				bigram = prevWord+words[i];
 				sentenceProb+=Math.log(bigramProbability(bigram, aspect));
