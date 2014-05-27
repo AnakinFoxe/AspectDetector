@@ -22,12 +22,18 @@ import edu.csupomona.nlp.utils.MapUtil;
 public class AspectParser {
 
 	private HashMap<String, List<Integer>> frequencyMap; //bigram to each frequecy
+	private HashMap<String, List<Integer>> frequencyMap2;
+	private HashMap<String, List<Integer>> frequencyMap3;
+	private HashMap<String, List<Integer>> frequencyMap4;
 	private List<List<String>> aspectList; //list of aspects we are looking for
 	private int[] aspectSentences;
 	private List<String> aspectNameList;
 
 	public AspectParser(){
 		frequencyMap = new HashMap<String, List<Integer>>();
+		frequencyMap2 = new HashMap<String, List<Integer>>();
+		frequencyMap3 = new HashMap<String, List<Integer>>();
+		frequencyMap4 = new HashMap<String, List<Integer>>();
 		aspectList = new ArrayList<List<String>>();
 		aspectNameList = new ArrayList<String>();
 	}
@@ -89,7 +95,7 @@ public class AspectParser {
 	 * to the appropriate aspect file the bigram word
 	 * @param words
 	 */
-	public void parseSentece(String[] words) {
+	public void parseSentence(String[] words) {
 		// TODO Auto-generated method stub
 		List<String> sentence = array2List(words);
 		List<Integer> aspectFrequency = new ArrayList<Integer>();
@@ -110,12 +116,11 @@ public class AspectParser {
 		if(aspectFrequency.contains(1)){
 			aspectFrequency.add(0);
 		}else{
-			aspectFrequency.add(1);
+			aspectFrequency.add(1);	// add 1 to "other" column
 			aspectSentences[aspectList.size()-1]+=1;
 		}
 		
 		String bigram;
-		
 		String prevWord = words[0];
 		for(int i = 1; i < words.length; i++){
 			bigram = (prevWord+words[i]).toLowerCase();
@@ -127,6 +132,128 @@ public class AspectParser {
 			}else{
 				frequencyMap.put(bigram, aspectFrequency);
 			}
+		}
+		
+		parseWindow(words);
+	}
+	
+	public void parseWindow(String[] words) {
+		// TODO Auto-generated method stub
+		Integer window = 3;
+		
+		String unigram;
+		String bigram;
+		String trigram;
+		
+		
+		int[] sentenceMarker = new int[words.length];
+		
+		List<String> sentence = array2List(words);
+		
+		for(int i = 0; i < aspectList.size()-1; i++){
+			List<String> aspect = aspectList.get(i);
+			for (int j = 0; j < aspect.size(); j++) {
+				if(sentence.contains(aspect.get(j))){
+					int pos = sentence.indexOf(aspect.get(j));
+					int begin = ((pos - window) > 0 ? pos - window : 0);
+					int end = ((pos + window) < sentence.size() ? pos + window : sentence.size()-1);
+					
+					// create the frequency list
+					List<Integer> aspectFrequency = new ArrayList<Integer>();
+					for (int idx = 0; idx < aspectList.size(); ++idx) {
+						if (idx != i)
+							aspectFrequency.add(0);
+						else
+							aspectFrequency.add(1);
+					}
+					
+					// update frequency list to the phrase
+					for (int idx = begin; idx <= end; ++idx) {
+						sentenceMarker[idx]++;
+						
+						// unigram
+						unigram = words[idx];
+						if (frequencyMap2.containsKey(unigram)) {
+							List<Integer> oldList = frequencyMap2.get(unigram);
+							List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+							frequencyMap2.put(unigram, newFrequency);
+						} else {
+							frequencyMap2.put(unigram, aspectFrequency);
+						}
+						
+						// bigram
+						if (end-idx > 0) {
+							bigram = words[idx] + words[idx+1];
+							if (frequencyMap3.containsKey(bigram)) {
+								List<Integer> oldList = frequencyMap3.get(bigram);
+								List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+								frequencyMap3.put(bigram, newFrequency);
+							} else {
+								frequencyMap3.put(bigram, aspectFrequency);
+							}
+						}
+						
+						// trigram
+						if (end-idx > 1) {
+							trigram = words[idx] + words[idx+1] + words[idx+2];
+							if (frequencyMap4.containsKey(trigram)) {
+								List<Integer> oldList = frequencyMap4.get(trigram);
+								List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+								frequencyMap4.put(trigram, newFrequency);
+							} else {
+								frequencyMap4.put(trigram, aspectFrequency);
+							}
+						}
+						
+					}
+					
+					//aspectSentences[i]+=1;
+					//break;
+				}
+			}
+		}
+		
+		// create the frequency list for other phrases
+		List<Integer> aspectFrequency = new ArrayList<Integer>();
+		for (int idx = 0; idx < aspectList.size()-1; ++idx) {
+			aspectFrequency.add(0);		
+		}
+		aspectFrequency.add(1);
+		
+		for(int i = 1; i < words.length; i++){
+			if (sentenceMarker[i] == 0) {
+				unigram = words[i];
+				if(frequencyMap2.containsKey(unigram)){
+					List<Integer> oldList = frequencyMap2.get(unigram);
+					List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+					frequencyMap2.put(unigram, newFrequency);
+				}else{
+					frequencyMap2.put(unigram, aspectFrequency);
+				}
+				
+				if ((i < words.length-1) && (sentenceMarker[i+1] == 0)) {
+					bigram = words[i] + words[i+1];
+					if(frequencyMap3.containsKey(bigram)){
+						List<Integer> oldList = frequencyMap3.get(bigram);
+						List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+						frequencyMap3.put(bigram, newFrequency);
+					}else{
+						frequencyMap3.put(bigram, aspectFrequency);
+					}
+					
+					if ((i < words.length-2) && (sentenceMarker[i+2] == 0)) {
+						trigram = words[i] + words[i+1] + words[i+2];
+						if(frequencyMap4.containsKey(trigram)){
+							List<Integer> oldList = frequencyMap4.get(trigram);
+							List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+							frequencyMap4.put(trigram, newFrequency);
+						}else{
+							frequencyMap4.put(trigram, aspectFrequency);
+						}
+					}
+				}
+			}
+			
 		}
 		
 		

@@ -61,23 +61,23 @@ public class WordParser {
 				adjustedSentence = adjustedSentence.toLowerCase();	// to lower case
 				String words[] = adjustedSentence.split(" +");
 				if(words.length > 0){
-					aspectParser.parseSentece(words);
+					aspectParser.parseSentence(words);
 				}
 				
 				// Xing: find similar words of camera
 //				List<String[]> list = StanfordTools.posTag(adjustedSentence);
-				if (cameraSim.size() < 5000) {
-					if (cameraSim.size() % 500 == 0) 
-						System.out.println(cameraSim.size());
+//				if (cameraSim.size() < 5000) {
+//					if (cameraSim.size() % 500 == 0) 
+//						System.out.println(cameraSim.size());
 //					System.out.println(adjustedSentence);
-					for (String[] word: StanfordTools.posTag(adjustedSentence)) {
-						word[0] = StanfordTools.lemmatize(word[0]);	// lemma
-						if ((!cameraSim.containsKey(word[0])) 
-							&& (word[1].equals("NN") || word[1].equals("NNS"))) {
-							cameraSim.put(word[0], SemanticSimilarity.getSim("camera", word[0]));
-						}
-					}
-				}
+//					for (String[] word: StanfordTools.posTag(adjustedSentence)) {
+//						word[0] = StanfordTools.lemmatize(word[0]);	// lemma
+//						if ((!cameraSim.containsKey(word[0])) 
+//							&& (word[1].equals("NN") || word[1].equals("NNS"))) {
+//							cameraSim.put(word[0], SemanticSimilarity.getSim("camera", word[0]));
+//						}
+//					}
+//				}
 			}
 		}
 		reviews.close();
