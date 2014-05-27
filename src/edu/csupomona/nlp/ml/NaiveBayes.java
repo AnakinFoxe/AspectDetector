@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.csupomona.nlp.aspect.AspectParser;
+import edu.csupomona.nlp.utils.Stopwords;
 
 
 public class NaiveBayes {
@@ -59,7 +60,7 @@ public class NaiveBayes {
 		
 		// local unigram count for each aspect
 		aspectWordSum2 = new int[aLists.size()];
-		frequencyMap2 = aspectParser.getFrequencyMap();
+		frequencyMap2 = aspectParser.getFrequencyMap2();
 		for(String unigram : frequencyMap2.keySet()){
 			List<Integer> counts = frequencyMap2.get(unigram);
 			for(int i = 0; i < counts.size(); i++){
@@ -69,7 +70,7 @@ public class NaiveBayes {
 		
 		// local bigram count for each aspect
 		aspectWordSum3 = new int[aLists.size()];
-		frequencyMap3 = aspectParser.getFrequencyMap();
+		frequencyMap3 = aspectParser.getFrequencyMap3();
 		for(String bigram : frequencyMap3.keySet()){
 			List<Integer> counts = frequencyMap3.get(bigram);
 			for(int i = 0; i < counts.size(); i++){
@@ -79,7 +80,7 @@ public class NaiveBayes {
 		
 		// local trigram count for each aspect
 		aspectWordSum4 = new int[aLists.size()];
-		frequencyMap4 = aspectParser.getFrequencyMap();
+		frequencyMap4 = aspectParser.getFrequencyMap4();
 		for(String trigram : frequencyMap4.keySet()){
 			List<Integer> counts = frequencyMap4.get(trigram);
 			for(int i = 0; i < counts.size(); i++){
@@ -166,6 +167,7 @@ public class NaiveBayes {
 		
 		String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 		String words[] = adjustedSentence.split(" +");
+		words = Stopwords.rmStopword(words);	// should move this operation out of here
 		double sentenceProb;
 		if(words.length > 0){
 			String unigram;
@@ -178,12 +180,12 @@ public class NaiveBayes {
 				
 				if (i < words.length-1) {
 					bigram = words[i] + words[i+1];
-					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
+					//sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+					//sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
 					
 					if (i < words.length-2) {
 						trigram = words[i] + words[i+1] + words[i+2];
-						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
+						//sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
 					}
 				}
 			}

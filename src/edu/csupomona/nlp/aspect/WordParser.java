@@ -60,6 +60,7 @@ public class WordParser {
 				String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 				adjustedSentence = adjustedSentence.toLowerCase();	// to lower case
 				String words[] = adjustedSentence.split(" +");
+				words = Stopwords.rmStopword(words);	// remove stopwords at here
 				if(words.length > 0){
 					aspectParser.parseSentence(words);
 				}
@@ -132,6 +133,7 @@ public class WordParser {
 				//loop through each sentence
 				for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
 					String sentence = review.substring(start,end);
+					String printOutSentence = sentence.replaceAll("\\s+$", "");
 					String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 					NaiveBayesResult nbRet = nb.classifySentence(adjustedSentence);
 					
@@ -156,7 +158,8 @@ public class WordParser {
 //					}
 					
 					// write result for each sentence
-					writerBW.write("[" + label + "][" + sentiment.toString() + "][" + nbRet.getProbability() + "]:" + adjustedSentence + "\n");
+					writerBW.write("[" + label + "][" + sentiment.toString() + "][]:" + printOutSentence + "\n");
+					//writerBW.write("[" + label + "][" + sentiment.toString() + "][" + nbRet.getProbability() + "]:" + printOutSentence + "\n");
 				}
 			}
 			reviews.close();
@@ -173,7 +176,7 @@ public class WordParser {
 //			}
 			
 			
-
+			System.out.println("Finished Processing.");
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

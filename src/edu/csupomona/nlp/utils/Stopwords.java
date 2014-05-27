@@ -43,4 +43,18 @@ public class Stopwords {
 		
 		return newSent;
 	}
+	
+	public static String[] rmStopword(String[] sentence) {
+		List<String> newSent = new ArrayList<String>();
+		
+		for (String w : sentence) {
+			if (stopwords.contains(w.replaceAll("\\s+", "").toLowerCase()))
+				continue;
+			newSent.add(w);
+		}
+		
+		String[] arrNewSent = newSent.toArray(new String[0]);
+		
+		return arrNewSent;
+	}
 }

@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import edu.csupomona.nlp.utils.MapUtil;
+import edu.csupomona.nlp.utils.Stopwords;
 
 /**
  * parses sentences to determine if the sentence is talking about a specific aspect. 
@@ -98,6 +99,7 @@ public class AspectParser {
 	public void parseSentence(String[] words) {
 		// TODO Auto-generated method stub
 		List<String> sentence = array2List(words);
+		
 		List<Integer> aspectFrequency = new ArrayList<Integer>();
 		for(int i = 0; i < aspectList.size()-1; i++){
 			List<String> aspect = aspectList.get(i);
@@ -405,6 +407,18 @@ public class AspectParser {
 
 	public HashMap<String, List<Integer>> getFrequencyMap() {
 		return frequencyMap;
+	}
+	
+	public HashMap<String, List<Integer>> getFrequencyMap2() {
+		return frequencyMap2;
+	}
+	
+	public HashMap<String, List<Integer>> getFrequencyMap3() {
+		return frequencyMap3;
+	}
+	
+	public HashMap<String, List<Integer>> getFrequencyMap4() {
+		return frequencyMap4;
 	}
 
 
