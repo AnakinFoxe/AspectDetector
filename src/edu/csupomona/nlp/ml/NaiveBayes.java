@@ -10,8 +10,14 @@ import edu.csupomona.nlp.aspect.AspectParser;
 public class NaiveBayes {
 	private List<String> bigramList;
 	private HashMap<String, List<Integer>> frequencyMap;
+	private HashMap<String, List<Integer>> frequencyMap2;
+	private HashMap<String, List<Integer>> frequencyMap3;
+	private HashMap<String, List<Integer>> frequencyMap4;
 	private List<String> aspectList;
 	private int[] aspectWordSum;
+	private int[] aspectWordSum2;
+	private int[] aspectWordSum3;
+	private int[] aspectWordSum4;
 	private int[] aspectSentence;
 	private int sentenceTotal;
 	
@@ -51,8 +57,35 @@ public class NaiveBayes {
 			}
 		}
 		
+		// local unigram count for each aspect
+		aspectWordSum2 = new int[aLists.size()];
+		frequencyMap2 = aspectParser.getFrequencyMap();
+		for(String unigram : frequencyMap2.keySet()){
+			List<Integer> counts = frequencyMap2.get(unigram);
+			for(int i = 0; i < counts.size(); i++){
+				aspectWordSum2[i]+=counts.get(i);
+			}
+		}
 		
+		// local bigram count for each aspect
+		aspectWordSum3 = new int[aLists.size()];
+		frequencyMap3 = aspectParser.getFrequencyMap();
+		for(String bigram : frequencyMap3.keySet()){
+			List<Integer> counts = frequencyMap3.get(bigram);
+			for(int i = 0; i < counts.size(); i++){
+				aspectWordSum3[i]+=counts.get(i);
+			}
+		}
 		
+		// local trigram count for each aspect
+		aspectWordSum4 = new int[aLists.size()];
+		frequencyMap4 = aspectParser.getFrequencyMap();
+		for(String trigram : frequencyMap4.keySet()){
+			List<Integer> counts = frequencyMap4.get(trigram);
+			for(int i = 0; i < counts.size(); i++){
+				aspectWordSum4[i]+=counts.get(i);
+			}
+		}
 	}
 	
 	/**
@@ -78,16 +111,50 @@ public class NaiveBayes {
 	 * @param given
 	 * @return
 	 */
-//	private double unigramLocalProb(String feature, String given){
-//		
-//		List<Integer> count = frequencyMap2.get(feature); // (frequencyMap.get(feature)==null)?null:
-//		int aspectIndex = aspectList.indexOf(given);
-//		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
-//		int unigramSize = frequencyMap2.size();
-//		int givenTotal = aspectWordSum[aspectIndex];
-//		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)unigramSize);
-//		return laplaceProb;	
-//	}
+	private double unigramLocalProb(String feature, String given){
+		
+		List<Integer> count = frequencyMap2.get(feature); // (frequencyMap.get(feature)==null)?null:
+		int aspectIndex = aspectList.indexOf(given);
+		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
+		int unigramSize = frequencyMap2.size();
+		int givenTotal = aspectWordSum[aspectIndex];
+		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)unigramSize);
+		return laplaceProb;	
+	}
+	
+	/**
+	 * find the probability of a bigram given it resides near a certain aspect
+	 * @param feature
+	 * @param given
+	 * @return
+	 */
+	private double bigramLocalProb(String feature, String given){
+		
+		List<Integer> count = frequencyMap3.get(feature); // (frequencyMap.get(feature)==null)?null:
+		int aspectIndex = aspectList.indexOf(given);
+		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
+		int bigramSize = frequencyMap3.size();
+		int givenTotal = aspectWordSum[aspectIndex];
+		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)bigramSize);
+		return laplaceProb;	
+	}
+	
+	/**
+	 * find the probability of a trigram given it resides near a certain aspect
+	 * @param feature
+	 * @param given
+	 * @return
+	 */
+	private double trigramLocalProb(String feature, String given){
+		
+		List<Integer> count = frequencyMap4.get(feature); // (frequencyMap.get(feature)==null)?null:
+		int aspectIndex = aspectList.indexOf(given);
+		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
+		int trigramSize = frequencyMap4.size();
+		int givenTotal = aspectWordSum[aspectIndex];
+		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)trigramSize);
+		return laplaceProb;	
+	}
 	
 	/**
 	 * find the probability a sentence belongs to a certain aspect
@@ -101,13 +168,24 @@ public class NaiveBayes {
 		String words[] = adjustedSentence.split(" +");
 		double sentenceProb;
 		if(words.length > 0){
-			String prevWord = words[0];
+			String unigram;
 			String bigram;
+			String trigram;
 			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
-			for(int i=1; i < words.length; i++){
-				bigram = prevWord+words[i];
-				sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-				prevWord = words[i];
+			for(int i=0; i < words.length; i++){
+				unigram = words[i];
+				sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
+				
+				if (i < words.length-1) {
+					bigram = words[i] + words[i+1];
+					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
+					
+					if (i < words.length-2) {
+						trigram = words[i] + words[i+1] + words[i+2];
+						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
+					}
+				}
 			}
 		}else{
 			sentenceProb = 0.0;
