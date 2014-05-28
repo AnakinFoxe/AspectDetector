@@ -172,6 +172,9 @@ public class WordParser {
 						continue;
 					}
 					
+//					if (label.equals("design"))
+//						System.out.println(adjustedSentence);
+					
 					results.put(label, new ArrayList<Integer>(Arrays.asList(value)));
 				}
 			}
