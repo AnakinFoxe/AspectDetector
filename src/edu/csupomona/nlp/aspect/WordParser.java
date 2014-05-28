@@ -182,6 +182,7 @@ public class WordParser {
 		return results;
 	}
 	
+	
 	public static void main(String[] args) {
 		WordParser parser = new WordParser("aspects/");
 		parser.train();
