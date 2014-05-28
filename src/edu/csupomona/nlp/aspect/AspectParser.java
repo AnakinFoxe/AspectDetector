@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import edu.csupomona.nlp.utils.MapUtil;
-import edu.csupomona.nlp.utils.Stopwords;
 
 /**
  * parses sentences to determine if the sentence is talking about a specific aspect. 

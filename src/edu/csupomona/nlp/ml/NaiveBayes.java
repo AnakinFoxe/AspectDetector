@@ -2,7 +2,6 @@ package edu.csupomona.nlp.ml;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import edu.csupomona.nlp.aspect.AspectParser;
 import edu.csupomona.nlp.utils.Stopwords;
