@@ -187,97 +187,99 @@ public class WordParser {
 	
 	
 	public static void main(String[] args) {
-		WordParser parser = new WordParser("aspects/");
-		parser.train();
-		HashMap<String, List<Integer>> results = parser.testProduct("B00BV1NKCW");
-		
-		for (Map.Entry<String, List<Integer>> entry : results.entrySet()) {
-			System.out.println(entry.getKey() + entry.getValue());
-		}
-		
 //		WordParser parser = new WordParser("aspects/");
-//		try {
-//			// Preprocessing training data
-//			parser.readDataStore("data/");
-////			parser.storeData("bigrams.csv");
-//			
-//			// Train Naive Bayes Classifier
-////			NaiveBayes nb = new NaiveBayes();
-//			parser.nb.loadAspectFrequency(parser.getAspectParser());
-//			
-//			// Test on testing set and get sentiment score
-//			FileReader reviewFile = new FileReader("nokia-lumia521-tmobile.txt");
-//			BufferedReader reviews = new BufferedReader(reviewFile);
-//			FileWriter writer = new FileWriter("nokia-result.txt");
-//			BufferedWriter writerBW = new BufferedWriter(writer);
-//			String review;
-////			HashMap<String, int[]> results = new HashMap<String, int[]>();
-//			while((review = reviews.readLine()) != null){
+//		parser.train();
+//		HashMap<String, List<Integer>> results = parser.testProduct("B00BV1NKCW");
+//		
+//		for (Map.Entry<String, List<Integer>> entry : results.entrySet()) {
+//			System.out.println(entry.getKey() + entry.getValue());
+//		}
+		
+		WordParser parser = new WordParser("aspects/");
+		try {
+			// Preprocessing training data
+			parser.readDataStore("data/");
+//			parser.storeData("bigrams.csv");
+			
+			// Train Naive Bayes Classifier
+			NaiveBayes nb = new NaiveBayes();
+			nb.loadAspectFrequency(parser.getAspectParser());
+			
+			// Test on testing set and get sentiment score
+			FileReader reviewFile = new FileReader("nokia-lumia521-tmobile.txt");
+			BufferedReader reviews = new BufferedReader(reviewFile);
+			FileWriter writer = new FileWriter("nokia-result.txt");
+			BufferedWriter writerBW = new BufferedWriter(writer);
+			String review;
+			HashMap<String, int[]> results = new HashMap<String, int[]>();
+			while((review = reviews.readLine()) != null){
 //				HashMap<String, List<Integer>> results = parser.testReview(review);
 //				
 //				for (Map.Entry<String, List<Integer>> entry : results.entrySet()) {
 //					System.out.println(review);
 //					System.out.println(entry.getKey() + entry.getValue());
 //				}
-//				
-//				//split the reviews into sentences
-////				BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
-////				iterator.setText(review);
-////				int start = iterator.first();
-////				//loop through each sentence
-////				for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
-////					String sentence = review.substring(start,end);
-////					String printOutSentence = sentence.replaceAll("\\s+$", "");
-////					String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
-////					NaiveBayesResult nbRet = nb.classifySentence(adjustedSentence);
-////					
-////					// sentiment analysis for non-neutral class
-////					String label = nbRet.getLabel();
-////					Integer sentiment = 9;	// init as invalid value
-//////					if (!label.equals("other")) {
-//////						sentiment = StanfordTools.sentiment(adjustedSentence);
-//////						int[] value = null;
-//////						if (results.containsKey(label)) {
-//////							value = results.get(label);
-//////							
-//////						} else {
-//////							value = new int[5];
-//////						}
-//////						if ((sentiment > 4) || (sentiment < 0)) {
-//////							System.out.println("Wrong Sentiment: " + sentiment.toString());
-//////							return;
-//////						}
-//////						value[sentiment]++;
-//////						results.put(label, value);
-//////					}
-////					
-////					// write result for each sentence
-////					writerBW.write("[" + label + "][" + sentiment.toString() + "][]:" + printOutSentence + "\n");
-////					//writerBW.write("[" + label + "][" + sentiment.toString() + "][" + nbRet.getProbability() + "]:" + printOutSentence + "\n");
-////				}
-//				
-//				
+				
+				//split the reviews into sentences
+				BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
+				iterator.setText(review);
+				int start = iterator.first();
+				//loop through each sentence
+				for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+					String sentence = review.substring(start,end);
+					String printOutSentence = sentence.replaceAll("\\s+$", "");
+					String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+					NaiveBayesResult nbRet = nb.classifySentence(adjustedSentence);
+					
+					// sentiment analysis for non-neutral class
+					String label = nbRet.getLabel();
+					Integer sentiment = 9;	// init as invalid value
+//					if (!label.equals("other")) {
+//						sentiment = StanfordTools.sentiment(adjustedSentence);
+//						int[] value = null;
+//						if (results.containsKey(label)) {
+//							value = results.get(label);
+//							
+//						} else {
+//							value = new int[5];
+//						}
+//						if ((sentiment > 4) || (sentiment < 0)) {
+//							System.out.println("Wrong Sentiment: " + sentiment.toString());
+//							return;
+//						}
+//						value[sentiment]++;
+//						results.put(label, value);
+//					}
+					
+					// write result for each sentence
+					writerBW.write("[" + label + "][" + sentiment.toString() + "][]:" + printOutSentence + "\n");
+					//writerBW.write("[" + label + "][" + sentiment.toString() + "][" + nbRet.getProbability() + "]:" + printOutSentence + "\n");
+				}
+				
+				
+			}
+			reviews.close();
+			writerBW.close();
+			
+			parser.PrintSim();
+			
+			System.out.println(parser.getAspectParser().getFrequencyMap2().size());
+			
+//			for (Map.Entry<String, int[]> entry : results.entrySet()) {
+//				System.out.print(entry.getKey() + ": ");
+//				for (int idx=0; idx<entry.getValue().length; ++idx) {
+//					System.out.print(entry.getValue()[idx] + "\t");
+//				}
+//				System.out.println();
 //			}
-//			reviews.close();
-//			writerBW.close();
-//			
-//			parser.PrintSim();
-//			
-////			for (Map.Entry<String, int[]> entry : results.entrySet()) {
-////				System.out.print(entry.getKey() + ": ");
-////				for (int idx=0; idx<entry.getValue().length; ++idx) {
-////					System.out.print(entry.getValue()[idx] + "\t");
-////				}
-////				System.out.println();
-////			}
-//			
-//			
-//			System.out.println("Finished Processing.");
-//			
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+			
+			
+			System.out.println("Finished Processing.");
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 }

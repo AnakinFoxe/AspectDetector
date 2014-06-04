@@ -179,12 +179,12 @@ public class NaiveBayes {
 				
 				if (i < words.length-1) {
 					bigram = words[i] + words[i+1];
-					//sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-					//sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
+//					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+//					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
 					
 					if (i < words.length-2) {
 						trigram = words[i] + words[i+1] + words[i+2];
-						//sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
+//						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
 					}
 				}
 			}

@@ -15,16 +15,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import edu.csupomona.nlp.utils.MapUtil;
+import edu.csupomona.nlp.utils.Stopwords;
 
 /**
  * parses sentences to determine if the sentence is talking about a specific aspect. 
  */
 public class AspectParser {
 
-	private HashMap<String, List<Integer>> frequencyMap; //bigram to each frequecy
-	private HashMap<String, List<Integer>> frequencyMap2;
-	private HashMap<String, List<Integer>> frequencyMap3;
-	private HashMap<String, List<Integer>> frequencyMap4;
+	private HashMap<String, List<Integer>> frequencyMap; 	// global bigram
+	private HashMap<String, List<Integer>> frequencyMap2;	// local unigram
+	private HashMap<String, List<Integer>> frequencyMap3;	// local bigram
+	private HashMap<String, List<Integer>> frequencyMap4;	// local trigram
 	private List<List<String>> aspectList; //list of aspects we are looking for
 	private int[] aspectSentences;
 	private List<String> aspectNameList;
@@ -135,17 +136,18 @@ public class AspectParser {
 			}
 		}
 		
-		// added for finding local unigram/bigram/trigram
-		parseWindow(words);
+		// added for finding local bigram/trigram
+		parseWindow(words, 3);
+		
+		// added for finding local unigram
+		String[] bag_of_words = Stopwords.rmStopword(words);	// only remove stopwords for unigram
+		parseWindowUnigram(bag_of_words, 3);
 	}
 	
-	public void parseWindow(String[] words) {
+	public void parseWindowUnigram(String[] words, Integer window) {
 		// TODO Auto-generated method stub
-		Integer window = 3;
 		
 		String unigram;
-		String bigram;
-		String trigram;
 		
 		
 		int[] sentenceMarker = new int[words.length];
@@ -181,7 +183,66 @@ public class AspectParser {
 							frequencyMap2.put(unigram, newFrequency);
 						} else {
 							frequencyMap2.put(unigram, aspectFrequency);
-						}
+						}	
+					}
+				}
+			}
+		}
+		
+		// create the frequency list for other phrases
+		List<Integer> aspectFrequency = new ArrayList<Integer>();
+		for (int idx = 0; idx < aspectList.size()-1; ++idx) {
+			aspectFrequency.add(0);		
+		}
+		aspectFrequency.add(1);
+		
+		for(int i = 1; i < words.length; i++){
+			if (sentenceMarker[i] == 0) {
+				unigram = words[i];
+				if(frequencyMap2.containsKey(unigram)){
+					List<Integer> oldList = frequencyMap2.get(unigram);
+					List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
+					frequencyMap2.put(unigram, newFrequency);
+				}else{
+					frequencyMap2.put(unigram, aspectFrequency);
+				}
+			}
+			
+		}
+		
+		
+	}
+	
+	public void parseWindow(String[] words, Integer window) {
+		
+		String bigram;
+		String trigram;
+		
+		
+		int[] sentenceMarker = new int[words.length];
+		
+		List<String> sentence = array2List(words);
+		
+		for(int i = 0; i < aspectList.size()-1; i++){
+			List<String> aspect = aspectList.get(i);
+			for (int j = 0; j < aspect.size(); j++) {
+				if(sentence.contains(aspect.get(j))){
+					int pos = sentence.indexOf(aspect.get(j));
+					int begin = ((pos - window) > 0 ? pos - window : 0);
+					int end = ((pos + window) < sentence.size() ? pos + window : sentence.size()-1);
+					
+					// create the frequency list
+					List<Integer> aspectFrequency = new ArrayList<Integer>();
+					for (int idx = 0; idx < aspectList.size(); ++idx) {
+						if (idx != i)
+							aspectFrequency.add(0);
+						else
+							aspectFrequency.add(1);
+					}
+					
+					// update frequency list to the phrase
+					for (int idx = begin; idx <= end; ++idx) {
+						sentenceMarker[idx]++;
 						
 						// bigram
 						if (end-idx > 0) {
@@ -224,14 +285,6 @@ public class AspectParser {
 		
 		for(int i = 1; i < words.length; i++){
 			if (sentenceMarker[i] == 0) {
-				unigram = words[i];
-				if(frequencyMap2.containsKey(unigram)){
-					List<Integer> oldList = frequencyMap2.get(unigram);
-					List<Integer> newFrequency = mergeList(oldList, aspectFrequency);
-					frequencyMap2.put(unigram, newFrequency);
-				}else{
-					frequencyMap2.put(unigram, aspectFrequency);
-				}
 				
 				if ((i < words.length-1) && (sentenceMarker[i+1] == 0)) {
 					bigram = words[i] + words[i+1];
