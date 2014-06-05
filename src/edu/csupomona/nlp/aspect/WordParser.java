@@ -67,7 +67,7 @@ public class WordParser {
 				String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 				adjustedSentence = adjustedSentence.toLowerCase();	// to lower case
 				String words[] = adjustedSentence.split(" +");
-				words = Stopwords.rmStopword(words);	// remove stopwords at here
+//				words = Stopwords.rmStopword(words);	// remove stopwords at here
 				if(words.length > 0){
 					aspectParser.parseSentence(words);
 				}

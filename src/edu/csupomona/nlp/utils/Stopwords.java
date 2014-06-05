@@ -36,7 +36,7 @@ public class Stopwords {
 		List<String> newSent = new ArrayList<String>();
 		
 		for (String w : sentence) {
-			if (stopwords.contains(w.replaceAll("\\s+", "").toLowerCase()))
+			if (isStopword(w))
 				continue;
 			newSent.add(w);
 		}
@@ -48,7 +48,7 @@ public class Stopwords {
 		List<String> newSent = new ArrayList<String>();
 		
 		for (String w : sentence) {
-			if (stopwords.contains(w.replaceAll("\\s+", "").toLowerCase()))
+			if (isStopword(w))
 				continue;
 			newSent.add(w);
 		}

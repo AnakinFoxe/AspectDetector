@@ -117,7 +117,7 @@ public class NaiveBayes {
 		int aspectIndex = aspectList.indexOf(given);
 		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
 		int unigramSize = frequencyMap2.size();
-		int givenTotal = aspectWordSum[aspectIndex];
+		int givenTotal = aspectWordSum2[aspectIndex];
 		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)unigramSize);
 		return laplaceProb;	
 	}
@@ -134,7 +134,7 @@ public class NaiveBayes {
 		int aspectIndex = aspectList.indexOf(given);
 		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
 		int bigramSize = frequencyMap3.size();
-		int givenTotal = aspectWordSum[aspectIndex];
+		int givenTotal = aspectWordSum3[aspectIndex];
 		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)bigramSize);
 		return laplaceProb;	
 	}
@@ -151,7 +151,7 @@ public class NaiveBayes {
 		int aspectIndex = aspectList.indexOf(given);
 		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
 		int trigramSize = frequencyMap4.size();
-		int givenTotal = aspectWordSum[aspectIndex];
+		int givenTotal = aspectWordSum4[aspectIndex];
 		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)trigramSize);
 		return laplaceProb;	
 	}
@@ -166,7 +166,7 @@ public class NaiveBayes {
 		
 		String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 		String words[] = adjustedSentence.split(" +");
-		words = Stopwords.rmStopword(words);	// should move this operation out of here
+//		words = Stopwords.rmStopword(words);	// should move this operation out of here
 		double sentenceProb;
 		if(words.length > 0){
 			String unigram;
@@ -174,17 +174,19 @@ public class NaiveBayes {
 			String trigram;
 			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
 			for(int i=0; i < words.length; i++){
-				unigram = words[i];
-				sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
+				if (!Stopwords.isStopword(words[i])) {
+					unigram = words[i];
+					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
+				}
 				
 				if (i < words.length-1) {
 					bigram = words[i] + words[i+1];
-//					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-//					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
+					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
 					
 					if (i < words.length-2) {
 						trigram = words[i] + words[i+1] + words[i+2];
-//						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
+						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
 					}
 				}
 			}
