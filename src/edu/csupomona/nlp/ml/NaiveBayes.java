@@ -181,12 +181,46 @@ public class NaiveBayes {
 				
 				if (i < words.length-1) {
 					bigram = words[i] + words[i+1];
-					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
+//					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+//					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
 					
 					if (i < words.length-2) {
 						trigram = words[i] + words[i+1] + words[i+2];
-						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
+//						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
+					}
+				}
+			}
+		}else{
+			sentenceProb = 0.0;
+		}
+		return sentenceProb;
+	}
+	
+private double sentenceProbability2(String aspect, String sentence){
+		
+		String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+		String words[] = adjustedSentence.split(" +");
+//		words = Stopwords.rmStopword(words);	// should move this operation out of here
+		double sentenceProb;
+		if(words.length > 0){
+			String unigram;
+			String bigram;
+			String trigram;
+			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
+			for(int i=0; i < words.length; i++){
+				if (!Stopwords.isStopword(words[i])) {
+					unigram = words[i];
+//					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
+				}
+				
+				if (i < words.length-1) {
+					bigram = words[i] + words[i+1];
+					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+//					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
+					
+					if (i < words.length-2) {
+						trigram = words[i] + words[i+1] + words[i+2];
+//						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
 					}
 				}
 			}
@@ -213,7 +247,7 @@ public class NaiveBayes {
 			List<String> aspectCase = aspectList.subList(0, aspectList.size()-2);
 			max = Double.NEGATIVE_INFINITY;
 			for(String aspect : aspectCase){
-				double aspectProb = sentenceProbability(aspect, sentence);
+				double aspectProb = sentenceProbability2(aspect, sentence);
 				if(aspectProb > max && aspectProb != 0.0){
 					max = aspectProb;
 					prediction = aspect;

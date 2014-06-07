@@ -31,6 +31,8 @@ public class WordParser {
 	
 	private NaiveBayes nb;
 	
+	private Integer sentCounter = 0;
+	
 	public WordParser(String pathOutput){
 		aspectParser = new AspectParser();
 		aspectPath = pathOutput;
