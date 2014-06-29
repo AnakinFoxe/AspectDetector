@@ -210,12 +210,12 @@ private double sentenceProbability2(String aspect, String sentence){
 			for(int i=0; i < words.length; i++){
 				if (!Stopwords.isStopword(words[i])) {
 					unigram = words[i];
-//					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
+					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
 				}
 				
 				if (i < words.length-1) {
 					bigram = words[i] + words[i+1];
-					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
+//					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
 //					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
 					
 					if (i < words.length-2) {

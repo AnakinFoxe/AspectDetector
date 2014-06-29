@@ -52,6 +52,8 @@ public class WordParser {
 		for (File file : files) {
 			processFile(dataStorePath + file.getName());
 		}
+		
+		System.out.println("total sentences:" + sentCounter.toString());
 	}
 
 	private void processFile(String pathInput) throws IOException{
@@ -73,6 +75,7 @@ public class WordParser {
 				if(words.length > 0){
 					aspectParser.parseSentence(words);
 				}
+				sentCounter++;
 				
 				// Xing: find similar words of camera
 //				List<String[]> list = StanfordTools.posTag(adjustedSentence);
