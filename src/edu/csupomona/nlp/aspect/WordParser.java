@@ -16,10 +16,11 @@ import java.util.TreeMap;
 
 import edu.csupomona.nlp.ml.NaiveBayes;
 import edu.csupomona.nlp.ml.NaiveBayesResult;
-import edu.csupomona.nlp.utils.MapUtil;
-import edu.csupomona.nlp.utils.SimpleCrawler;
-import edu.csupomona.nlp.utils.StanfordTools;
-import edu.csupomona.nlp.utils.Stopwords;
+import edu.csupomona.nlp.tool.crawler.Amazon;
+import edu.csupomona.nlp.util.MapUtil;
+
+import edu.csupomona.nlp.util.StanfordTools;
+import edu.csupomona.nlp.util.Stopword;
 
 
 public class WordParser {
@@ -32,6 +33,10 @@ public class WordParser {
 	private NaiveBayes nb;
 	
 	private Integer sentCounter = 0;
+        
+        Stopword sw;
+        
+        Amazon crawler;
 	
 	public WordParser(String pathOutput){
 		aspectParser = new AspectParser();
@@ -43,7 +48,9 @@ public class WordParser {
 		
 		StanfordTools.init();
 //		SemanticSimilarity.init();
-		Stopwords.init();
+		sw = new Stopword("E");
+                
+                crawler = new Amazon();
 	}
 	
 	public void readDataStore(String dataStorePath) throws IOException{
@@ -134,7 +141,7 @@ public class WordParser {
 	public HashMap<String, List<Integer>> testProduct(String productId) {
 		HashMap<String, List<Integer>> results = new HashMap<String, List<Integer>>();
 		
-		List<String> reviews = SimpleCrawler.crawl(productId);
+		List<String> reviews = crawler.crawl(productId);
 		
 		BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
 		Integer count = 0;

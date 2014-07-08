@@ -12,11 +12,17 @@
 hs_err_pid*
 
 
-.settings/
-bin/
-data/
-aspects/
-target/
-*.txt
-
+project-root-directory/
++ build/
++ dist/
++ nbproject/
+  build-impl.xml
+  + private/
+  + project.properties
+  + project.xml
++ src/
++ test/
++ build.xml
+/build/
+/dist/
 

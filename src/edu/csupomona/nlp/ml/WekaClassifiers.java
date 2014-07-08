@@ -27,7 +27,7 @@ import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
-import edu.csupomona.nlp.utils.Stopwords;
+import edu.csupomona.nlp.util.Stopword;
 
 
 public class WekaClassifiers {
@@ -47,6 +47,8 @@ public class WekaClassifiers {
 	
 	private int[] otrain_counter;
 	private int[] train_counter;
+        
+        Stopword sw;
 	
 	public WekaClassifiers(Integer c) {
 		// choose the type of classifier
@@ -87,7 +89,7 @@ public class WekaClassifiers {
 		aspectWordList.add("screen");
 		
 		// Stopwords init
-		Stopwords.init();
+		sw = new Stopword("E");
 		
 		// counter init
 		counter = new int[4];
@@ -269,7 +271,7 @@ public class WekaClassifiers {
 			String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 			adjustedSentence = adjustedSentence.toLowerCase();	// to lower case
 			String words[] = adjustedSentence.split(" +");
-			words = Stopwords.rmStopword(words);	// remove stopwords at here
+			words = sw.rmStopword(words);	// remove stopwords at here
 			if(words.length > 0){
 				extractFeature(words, time);
 			}
@@ -316,7 +318,7 @@ public class WekaClassifiers {
 					String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
 					adjustedSentence = adjustedSentence.toLowerCase();	// to lower case
 					String words[] = adjustedSentence.split(" +");
-					words = Stopwords.rmStopword(words);	// remove stopwords at here
+					words = sw.rmStopword(words);	// remove stopwords at here
 					
 					for (String word : words) {
 						if (unigramList.contains(word)) 

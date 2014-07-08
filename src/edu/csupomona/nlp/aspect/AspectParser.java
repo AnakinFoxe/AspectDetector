@@ -1,4 +1,5 @@
 package edu.csupomona.nlp.aspect;
+import edu.csupomona.nlp.util.MapUtil;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,8 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import edu.csupomona.nlp.utils.MapUtil;
-import edu.csupomona.nlp.utils.Stopwords;
+import edu.csupomona.nlp.util.MapUtil;
+import edu.csupomona.nlp.util.Stopword;
 
 /**
  * parses sentences to determine if the sentence is talking about a specific aspect. 
@@ -29,6 +30,8 @@ public class AspectParser {
 	private List<List<String>> aspectList; //list of aspects we are looking for
 	private int[] aspectSentences;
 	private List<String> aspectNameList;
+        
+        Stopword sw;
 
 	public AspectParser(){
 		frequencyMap = new HashMap<String, List<Integer>>();
@@ -37,6 +40,8 @@ public class AspectParser {
 		frequencyMap4 = new HashMap<String, List<Integer>>();
 		aspectList = new ArrayList<List<String>>();
 		aspectNameList = new ArrayList<String>();
+                
+                sw = new Stopword("E");
 	}
 	
 	
@@ -140,7 +145,7 @@ public class AspectParser {
 		parseWindow(words, 3);
 		
 		// added for finding local unigram
-		String[] bag_of_words = Stopwords.rmStopword(words);	// only remove stopwords for unigram
+		String[] bag_of_words = sw.rmStopword(words);	// only remove stopwords for unigram
 		parseWindowUnigram(bag_of_words, 3);
 	}
 	

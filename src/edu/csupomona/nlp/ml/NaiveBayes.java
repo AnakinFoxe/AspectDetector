@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.csupomona.nlp.aspect.AspectParser;
-import edu.csupomona.nlp.utils.Stopwords;
+import edu.csupomona.nlp.util.Stopword;
 
 
 public class NaiveBayes {
@@ -20,9 +20,11 @@ public class NaiveBayes {
 	private int[] aspectWordSum4;
 	private int[] aspectSentence;
 	private int sentenceTotal;
+        
+        Stopword sw;
 	
 	public NaiveBayes(){
-		
+		sw = new Stopword("E");
 	}
 	
 	public void loadAspectBigrams(List<String> aspectBigrams){
@@ -174,7 +176,7 @@ public class NaiveBayes {
 			String trigram;
 			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
 			for(int i=0; i < words.length; i++){
-				if (!Stopwords.isStopword(words[i])) {
+				if (!sw.isStopword(words[i])) {
 					unigram = words[i];
 					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
 				}
@@ -208,7 +210,7 @@ private double sentenceProbability2(String aspect, String sentence){
 			String trigram;
 			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
 			for(int i=0; i < words.length; i++){
-				if (!Stopwords.isStopword(words[i])) {
+				if (!sw.isStopword(words[i])) {
 					unigram = words[i];
 					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
 				}
