@@ -76,7 +76,7 @@ public class NGramParser {
             HashMap<String, List<Integer>> frequencyMap,
             int[] aspectSentences) {
         int begin = 0;
-        int end = words.size();
+        int end = 0;    // when sentence contains no aspect words
         boolean hasAspectWord = false;
         
         // search through all the aspects (neglacting "others")

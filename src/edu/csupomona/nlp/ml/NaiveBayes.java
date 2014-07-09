@@ -79,8 +79,6 @@ public class NaiveBayes {
             }
         }
         
-        System.out.println(map.size());
-        
         return map;
     }
     
@@ -118,10 +116,7 @@ public class NaiveBayes {
             map.put("all", countAll);
             this.aspects.add("all");
         }
-        
-        for (String key : map.keySet())
-            System.out.println(key);
-        
+
         return map;
     }
     
@@ -154,20 +149,15 @@ public class NaiveBayes {
         for (File file : files) {
             
             if (file.getName().contains("ngram")) {
-                System.out.println("train " + file.getName());
-                
                 // parse the ngram files
                 freqMap.add(readNGram(file));
                 
                 // parse the name of the files to obtain W and N info
                 wN.add(readWN(file.getName()));
             }
-            else {
-                System.out.println("parse " + file.getName());
-                
+            else 
                 // parse the aspect sentences count
                 aspectSentences = readAspectSent(file);
-            }
         }
         
         aspectSentTotal = aspectSentences.get("all")
@@ -197,7 +187,7 @@ public class NaiveBayes {
         double sentenceProb;
         if(words.length > 0){
             sentenceProb = Math.log((double)this.aspectSentences.get(aspect) 
-                    / this.aspectSentTotal);
+                    / this.aspectSentTotal);    // bugfix: add Math.log
             
             for (int i=0; i<wN.size(); i++) {
 //                int W = wN.get(i).get(0);

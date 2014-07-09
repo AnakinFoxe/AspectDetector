@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 
 /**
@@ -32,18 +33,28 @@ public class AspectDetector {
         nb = new NaiveBayes();
     }
     
-    public void collectNGram() throws IOException {
+    public void collectNGram(int operation) throws IOException {
         AspectParser ap = new AspectParser();
+        
+        File[] files = new File(PATH_NGRAM).listFiles();
+        for (File file : files)
+            file.delete();
 
         // window size 3
-        ap.parse(3, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
-        ap.parse(3, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
-        ap.parse(3, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
+        if ((operation & 1) != 0) 
+            ap.parse(3, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
+        if ((operation & 2) != 0)
+            ap.parse(3, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
+        if ((operation & 4) != 0)
+            ap.parse(3, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
 
         // window size 999
-        ap.parse(999, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
-        ap.parse(999, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
-        ap.parse(999, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
+        if ((operation & 8) != 0)
+            ap.parse(999, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
+        if ((operation & 16) != 0)
+            ap.parse(999, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
+        if ((operation & 32) != 0)
+            ap.parse(999, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
     }
     
     public void trainNB() throws IOException {
@@ -81,8 +92,10 @@ public class AspectDetector {
             }
             
             for (String key : map.keySet()) {
-                System.out.println(key + "]: " + map.get(key)[1] + "/"
-                                    + map.get(key)[0]);
+                System.out.println(key + ": " 
+                        + map.get(key)[1] + "/"
+                        + map.get(key)[0] + " = "
+                        + (double)map.get(key)[1]/map.get(key)[0]);
             }
         }
         
@@ -90,15 +103,16 @@ public class AspectDetector {
     }
     
     public static void main(String[] args) throws IOException {
-        AspectDetector ad = new AspectDetector();
-        
-        // collect n-gram information
-        ad.collectNGram();
-        
-        // train a naive bayes classifier
-        ad.trainNB();
-        
-        // test on 
-        ad.testNB();
+        for (int i=1; i<64; i*=2) {
+            AspectDetector ad = new AspectDetector();
+            // collect n-gram information
+            ad.collectNGram(i);
+
+            // train a naive bayes classifier
+            ad.trainNB();
+
+            // test on 
+            ad.testNB();
+        }
     }
 }
