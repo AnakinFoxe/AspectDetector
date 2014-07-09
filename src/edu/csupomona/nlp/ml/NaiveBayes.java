@@ -34,7 +34,7 @@ public class NaiveBayes {
     
     private int aspectSentTotal;
     
-    private final Pattern ptnWN = Pattern.compile("ngram_W([0-9]+)_N([0-9]+)");
+    private final Pattern ptnWN = Pattern.compile("ngram_W([0-9]+)_N([0-9]+).*");
     
     private final Stopword sw;
     
@@ -59,8 +59,21 @@ public class NaiveBayes {
             while ((line = br.readLine()) != null) {
                 String[] items = line.split(",");
                 List<Integer> counts = new ArrayList<>();
-                for (int i=1; i<items.length; i++) 
-                    counts.add(Integer.valueOf(items[i].trim()));
+                int sum = 0;
+                
+                // add aspects
+                int i;
+                for (i=1; i<items.length-1; i++) {
+                    int count = Integer.valueOf(items[i].trim());
+                    counts.add(count);
+                    sum += count;
+                }
+                
+                // add others
+                counts.add(Integer.valueOf(items[i].trim()));
+                
+                // add all
+                counts.add(sum);
                 
                 map.put(items[0], counts);
             }
@@ -74,13 +87,13 @@ public class NaiveBayes {
     private List<Integer> readWN(String filename) {
         Matcher matcher = ptnWN.matcher(filename);
         
-        List<Integer> wN = new ArrayList<>();
+        List<Integer> wn = new ArrayList<>();
         if (matcher.matches()) {
-            wN.add(Integer.valueOf(matcher.group(1)));  // W
-            wN.add(Integer.valueOf(matcher.group(2)));  // N
+            wn.add(Integer.valueOf(matcher.group(1)));  // W
+            wn.add(Integer.valueOf(matcher.group(2)));  // N
         }
         
-        return wN;
+        return wn;
     }
     
     private HashMap<String, Integer> readAspectSent(File file) 
@@ -119,17 +132,17 @@ public class NaiveBayes {
             int sum = 0;
             int i;
             // update aspect words
-            for (i=0; i<map.get(key).size()-1; i++) {
+            for (i=0; i<map.get(key).size()-2; i++) {
                 wordSum[i] += map.get(key).get(i);
                 sum += map.get(key).get(i);
             }
             
             // update others
-            wordSum[i] = map.get(key).get(i);
+            wordSum[i] += map.get(key).get(i);
             i++;
             
-            // update others
-            wordSum[i] = sum;
+            // update all
+            wordSum[i] += sum;
         }
        
         return wordSum;
@@ -183,8 +196,8 @@ public class NaiveBayes {
 
         double sentenceProb;
         if(words.length > 0){
-            sentenceProb = (double)this.aspectSentences.get(aspect) 
-                    / this.aspectSentTotal;
+            sentenceProb = Math.log((double)this.aspectSentences.get(aspect) 
+                    / this.aspectSentTotal);
             
             for (int i=0; i<wN.size(); i++) {
 //                int W = wN.get(i).get(0);

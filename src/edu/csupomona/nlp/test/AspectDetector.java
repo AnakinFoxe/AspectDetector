@@ -61,9 +61,11 @@ public class AspectDetector {
             HashMap<String, int[]> map = new HashMap<>();
             while ((line = br.readLine()) != null) {
                 String[] items = line.split("::");
-                System.out.println(items[0] + "===>" + items[1]);
+               
                 NaiveBayesResult nbRet = nb.classify(items[1]);
                 String label = "[" + nbRet.getLabel() + "]";
+                
+//                System.out.println(items[0] + "===>" + label);
                 
                 int[] count;
                 if (map.containsKey(items[0])) {
@@ -91,7 +93,7 @@ public class AspectDetector {
         AspectDetector ad = new AspectDetector();
         
         // collect n-gram information
-//        ad.collectNGram();
+        ad.collectNGram();
         
         // train a naive bayes classifier
         ad.trainNB();

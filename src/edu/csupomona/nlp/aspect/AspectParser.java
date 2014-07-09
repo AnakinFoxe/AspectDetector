@@ -6,6 +6,7 @@
 
 package edu.csupomona.nlp.aspect;
 
+import edu.csupomona.nlp.util.Stopword;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,10 +40,15 @@ public class AspectParser {
     // n-gram parser
     private final NGramParser ngramParser;
     
+    // stopwords removal
+    private final Stopword sw;
+    
     public AspectParser() {
         this.breakIter = BreakIterator.getSentenceInstance(Locale.US);
         
         this.ngramParser = new NGramParser();
+        
+        this.sw = new Stopword("E");
     }
     
     /**
@@ -142,6 +148,10 @@ public class AspectParser {
                     // tokenize
                     List<String> words = new ArrayList<>(
                             Arrays.asList(adjustedSentence.split(" +")));
+                    
+                    // remove stopwords for unigram
+                    if (ngramParser.getN() == 1)
+                        words = sw.rmStopword(words);
                     
                     // parse n-gram
                     if (words.size() > 0) 
