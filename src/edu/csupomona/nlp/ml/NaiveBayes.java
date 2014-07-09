@@ -1,265 +1,245 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package edu.csupomona.nlp.ml;
+
+import edu.csupomona.nlp.util.NGram;
+import edu.csupomona.nlp.util.Stopword;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import edu.csupomona.nlp.aspect.AspectParser;
-import edu.csupomona.nlp.util.Stopword;
-
-
+/**
+ *
+ * @author Xing
+ */
 public class NaiveBayes {
-	private List<String> bigramList;
-	private HashMap<String, List<Integer>> frequencyMap;
-	private HashMap<String, List<Integer>> frequencyMap2;
-	private HashMap<String, List<Integer>> frequencyMap3;
-	private HashMap<String, List<Integer>> frequencyMap4;
-	private List<String> aspectList;
-	private int[] aspectWordSum;
-	private int[] aspectWordSum2;
-	private int[] aspectWordSum3;
-	private int[] aspectWordSum4;
-	private int[] aspectSentence;
-	private int sentenceTotal;
+    
+    private final List<HashMap<String, List<Integer>>> freqMap;
+    private final List<List<Integer>> wN;
+    
+    private List<int[]> aspectWordSum;
+    
+    private List<String> aspects;
+    private HashMap<String, Integer> aspectSentences;
+    
+    private int aspectSentTotal;
+    
+    private final Pattern ptnWN = Pattern.compile("ngram_W([0-9]+)_N([0-9]+)");
+    
+    private final Stopword sw;
+    
+    public NaiveBayes() {
+        sw = new Stopword("E");
         
-        Stopword sw;
-	
-	public NaiveBayes(){
-		sw = new Stopword("E");
-	}
-	
-	public void loadAspectBigrams(List<String> aspectBigrams){
-		bigramList.addAll(aspectBigrams);
-	}
-	
-	public void loadAspectFrequency(AspectParser aspectParser){
-		// aspect list
-		aspectList = new ArrayList<String>();
-		List<List<String>> aLists = aspectParser.getAspectList();
-		for(int i = 0; i < aLists.size()-2; i++){	// -2
-			List<String> aspectSyn = aLists.get(i);
-			String aspect = aspectSyn.get(0);
-			aspectList.add(aspect);
-		}
-		aspectList.add("all");		// label: all
-		aspectList.add("other");	// label: other
-		
-		// sentences belong to each aspect, and total count
-		aspectSentence = aspectParser.getAspectSentences();
-		for(int count : aspectSentence){
-			sentenceTotal+=count;
-		}
-		
-		// bigram count for each aspect
-		aspectWordSum = new int[aLists.size()];
-		frequencyMap = aspectParser.getFrequencyMap();
-		for(String bigram : frequencyMap.keySet()){
-			List<Integer> counts = frequencyMap.get(bigram);
-			for(int i = 0; i < counts.size(); i++){
-				aspectWordSum[i]+=counts.get(i);
-			}
-		}
-		
-		// local unigram count for each aspect
-		aspectWordSum2 = new int[aLists.size()];
-		frequencyMap2 = aspectParser.getFrequencyMap2();
-		for(String unigram : frequencyMap2.keySet()){
-			List<Integer> counts = frequencyMap2.get(unigram);
-			for(int i = 0; i < counts.size(); i++){
-				aspectWordSum2[i]+=counts.get(i);
-			}
-		}
-		
-		// local bigram count for each aspect
-		aspectWordSum3 = new int[aLists.size()];
-		frequencyMap3 = aspectParser.getFrequencyMap3();
-		for(String bigram : frequencyMap3.keySet()){
-			List<Integer> counts = frequencyMap3.get(bigram);
-			for(int i = 0; i < counts.size(); i++){
-				aspectWordSum3[i]+=counts.get(i);
-			}
-		}
-		
-		// local trigram count for each aspect
-		aspectWordSum4 = new int[aLists.size()];
-		frequencyMap4 = aspectParser.getFrequencyMap4();
-		for(String trigram : frequencyMap4.keySet()){
-			List<Integer> counts = frequencyMap4.get(trigram);
-			for(int i = 0; i < counts.size(); i++){
-				aspectWordSum4[i]+=counts.get(i);
-			}
-		}
-	}
-	
-	/**
-	 * find the probability of a bigram given it resides in a certain aspect
-	 * @param feature
-	 * @param given
-	 * @return
-	 */
-	private double bigramProbability(String feature, String given){
-		
-		List<Integer> count = frequencyMap.get(feature); // (frequencyMap.get(feature)==null)?null:
-		int aspectIndex = aspectList.indexOf(given);
-		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
-		int bigramSize = frequencyMap.size();
-		int givenTotal = aspectWordSum[aspectIndex];
-		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)bigramSize);
-		return laplaceProb;	
-	}
-	
-	/**
-	 * find the probability of a unigram given it resides near a certain aspect
-	 * @param feature
-	 * @param given
-	 * @return
-	 */
-	private double unigramLocalProb(String feature, String given){
-		
-		List<Integer> count = frequencyMap2.get(feature); // (frequencyMap.get(feature)==null)?null:
-		int aspectIndex = aspectList.indexOf(given);
-		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
-		int unigramSize = frequencyMap2.size();
-		int givenTotal = aspectWordSum2[aspectIndex];
-		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)unigramSize);
-		return laplaceProb;	
-	}
-	
-	/**
-	 * find the probability of a bigram given it resides near a certain aspect
-	 * @param feature
-	 * @param given
-	 * @return
-	 */
-	private double bigramLocalProb(String feature, String given){
-		
-		List<Integer> count = frequencyMap3.get(feature); // (frequencyMap.get(feature)==null)?null:
-		int aspectIndex = aspectList.indexOf(given);
-		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
-		int bigramSize = frequencyMap3.size();
-		int givenTotal = aspectWordSum3[aspectIndex];
-		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)bigramSize);
-		return laplaceProb;	
-	}
-	
-	/**
-	 * find the probability of a trigram given it resides near a certain aspect
-	 * @param feature
-	 * @param given
-	 * @return
-	 */
-	private double trigramLocalProb(String feature, String given){
-		
-		List<Integer> count = frequencyMap4.get(feature); // (frequencyMap.get(feature)==null)?null:
-		int aspectIndex = aspectList.indexOf(given);
-		int featureCount = (count != null)? count.get(aspectIndex) : 0 ;		 
-		int trigramSize = frequencyMap4.size();
-		int givenTotal = aspectWordSum4[aspectIndex];
-		double laplaceProb = ((double)featureCount + 1.0)/((double)givenTotal + (double)trigramSize);
-		return laplaceProb;	
-	}
-	
-	/**
-	 * find the probability a sentence belongs to a certain aspect
-	 * @param aspect
-	 * @param sentence
-	 * @return
-	 */
-	private double sentenceProbability(String aspect, String sentence){
-		
-		String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
-		String words[] = adjustedSentence.split(" +");
-//		words = Stopwords.rmStopword(words);	// should move this operation out of here
-		double sentenceProb;
-		if(words.length > 0){
-			String unigram;
-			String bigram;
-			String trigram;
-			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
-			for(int i=0; i < words.length; i++){
-				if (!sw.isStopword(words[i])) {
-					unigram = words[i];
-					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
-				}
-				
-				if (i < words.length-1) {
-					bigram = words[i] + words[i+1];
-//					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-//					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
-					
-					if (i < words.length-2) {
-						trigram = words[i] + words[i+1] + words[i+2];
-//						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
-					}
-				}
-			}
-		}else{
-			sentenceProb = 0.0;
-		}
-		return sentenceProb;
-	}
-	
-private double sentenceProbability2(String aspect, String sentence){
-		
-		String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
-		String words[] = adjustedSentence.split(" +");
-//		words = Stopwords.rmStopword(words);	// should move this operation out of here
-		double sentenceProb;
-		if(words.length > 0){
-			String unigram;
-			String bigram;
-			String trigram;
-			sentenceProb = (double)aspectSentence[aspectList.indexOf(aspect)]/sentenceTotal;
-			for(int i=0; i < words.length; i++){
-				if (!sw.isStopword(words[i])) {
-					unigram = words[i];
-					sentenceProb+=Math.log(unigramLocalProb(unigram, aspect));
-				}
-				
-				if (i < words.length-1) {
-					bigram = words[i] + words[i+1];
-//					sentenceProb+=Math.log(bigramProbability(bigram, aspect));
-//					sentenceProb+=Math.log(bigramLocalProb(bigram, aspect));
-					
-					if (i < words.length-2) {
-						trigram = words[i] + words[i+1] + words[i+2];
-//						sentenceProb+=Math.log(trigramLocalProb(trigram, aspect));
-					}
-				}
-			}
-		}else{
-			sentenceProb = 0.0;
-		}
-		return sentenceProb;
-	}
-	
-	public NaiveBayesResult classifySentence(String sentence){
-		double max = Double.NEGATIVE_INFINITY;
-		String prediction = aspectList.get(aspectList.size()-1); //assume it is not talking about any aspects
-		List<String> neutralCase = aspectList.subList(aspectList.size()-2, aspectList.size());
-		for(String aspect : neutralCase){
-			double aspectProb = sentenceProbability(aspect, sentence);
-			if(aspectProb > max && aspectProb != 0.0){
-				max = aspectProb;
-				prediction = aspect;
-			}
-//			System.out.println(aspect + ":" + aspectProb);
-		}
-		String neutral = neutralCase.get(neutralCase.size()-1);
-		if(!prediction.equals(neutral)){
-			List<String> aspectCase = aspectList.subList(0, aspectList.size()-2);
-			max = Double.NEGATIVE_INFINITY;
-			for(String aspect : aspectCase){
-				double aspectProb = sentenceProbability2(aspect, sentence);
-				if(aspectProb > max && aspectProb != 0.0){
-					max = aspectProb;
-					prediction = aspect;
-				}
-//				System.out.println(aspect + ":" + aspectProb);
-			}
-		}
+        freqMap = new ArrayList<>();
+        wN = new ArrayList<>();
+        
+        aspects = new ArrayList<>();
+        aspectWordSum = new ArrayList<>();
+//        aspectSentences = new HashMap<>();
+    }
+    
+    private HashMap<String, List<Integer>> readNGram(File file) 
+            throws IOException {
+        FileReader fr = new FileReader(file);
+        
+        String line;
+        HashMap<String, List<Integer>> map = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(fr)) {
+            while ((line = br.readLine()) != null) {
+                String[] items = line.split(",");
+                List<Integer> counts = new ArrayList<>();
+                for (int i=1; i<items.length; i++) 
+                    counts.add(Integer.valueOf(items[i].trim()));
+                
+                map.put(items[0], counts);
+            }
+        }
+        
+        System.out.println(map.size());
+        
+        return map;
+    }
+    
+    private List<Integer> readWN(String filename) {
+        Matcher matcher = ptnWN.matcher(filename);
+        
+        List<Integer> wN = new ArrayList<>();
+        if (matcher.matches()) {
+            wN.add(Integer.valueOf(matcher.group(1)));  // W
+            wN.add(Integer.valueOf(matcher.group(2)));  // N
+        }
+        
+        return wN;
+    }
+    
+    private HashMap<String, Integer> readAspectSent(File file) 
+            throws IOException{
+        FileReader fr = new FileReader(file);
+        
+        Integer countAll = 0;
+        String line;
+        HashMap<String, Integer> map = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(fr)) {
+            while ((line = br.readLine()) != null) {
+                String[] items = line.split(":");
+                
+                map.put(items[0], Integer.valueOf(items[1].trim()));
+                
+                if (!items[0].equals("others"))
+                    countAll += Integer.valueOf(items[1].trim());
+                
+                this.aspects.add(items[0]);
+            }
+            
+            map.put("all", countAll);
+            this.aspects.add("all");
+        }
+        
+        for (String key : map.keySet())
+            System.out.println(key);
+        
+        return map;
+    }
+    
+    private int[] calAspectWordSum(HashMap<String, List<Integer>> map) {
+        int[] wordSum = new int[aspectSentences.size()];
+        
+        for (String key : map.keySet()) {
+            int sum = 0;
+            int i;
+            // update aspect words
+            for (i=0; i<map.get(key).size()-1; i++) {
+                wordSum[i] += map.get(key).get(i);
+                sum += map.get(key).get(i);
+            }
+            
+            // update others
+            wordSum[i] = map.get(key).get(i);
+            i++;
+            
+            // update others
+            wordSum[i] = sum;
+        }
+       
+        return wordSum;
+    }
+    
+    public void train(String ngramPath) throws IOException {
+        File[] files = new File(ngramPath).listFiles();
+        
+        for (File file : files) {
+            
+            if (file.getName().contains("ngram")) {
+                System.out.println("train " + file.getName());
+                
+                // parse the ngram files
+                freqMap.add(readNGram(file));
+                
+                // parse the name of the files to obtain W and N info
+                wN.add(readWN(file.getName()));
+            }
+            else {
+                System.out.println("parse " + file.getName());
+                
+                // parse the aspect sentences count
+                aspectSentences = readAspectSent(file);
+            }
+        }
+        
+        aspectSentTotal = aspectSentences.get("all")
+                + aspectSentences.get("others");
+        
+        for (int i=0; i<freqMap.size(); ++i) 
+            aspectWordSum.add(calAspectWordSum(freqMap.get(i)));
+        
+    }
+    
+    private double calNGramProb(String ngram, String aspect, Integer N, 
+            HashMap<String, List<Integer>> map,
+            int[] wordSum) {
+        List<Integer> count = map.get(ngram);
+        int idx = this.aspects.indexOf(aspect);
+        int aspectCount = (count != null)? count.get(idx) : 0;
+        int v = map.size();
+        int total = wordSum[idx];
+        
+        return (double)(aspectCount + 1.0) / (total + v);
+    }
+    
+    private double calProbability(String aspect, String sentence) {
+        String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+        String[] words = adjustedSentence.split(" +");
 
-		
-		return new NaiveBayesResult(prediction, max);
-	}
-	
+        double sentenceProb;
+        if(words.length > 0){
+            sentenceProb = (double)this.aspectSentences.get(aspect) 
+                    / this.aspectSentTotal;
+            
+            for (int i=0; i<wN.size(); i++) {
+//                int W = wN.get(i).get(0);
+                int N = wN.get(i).get(1);
+                
+                // get n-gram from the sentence
+                HashMap<String, Integer> map = new HashMap<>();
+                NGram ng = new NGram(N);
+                if (N == 1) {
+                    String[] trimWords = sw.rmStopword(words);
+                    ng.updateNGram(map, trimWords);
+                } else 
+                    ng.updateNGram(map, words);
+                
+                // add probability for each n-gram
+                for (String ngram : map.keySet()) 
+                    sentenceProb += 
+                            Math.log(calNGramProb(ngram, aspect, N, 
+                                    this.freqMap.get(i),
+                                    this.aspectWordSum.get(i)))
+                            * map.get(ngram);
+            }
+        }else{
+                sentenceProb = 0.0;
+        }
+        return sentenceProb;
+    }
+    
+    public NaiveBayesResult classify(String sentence) {
+        double max = Double.NEGATIVE_INFINITY;
+        String prediction = "others"; //assume it is not talking about any aspects
+        List<String> iter1 = aspects.subList(aspects.size()-2, aspects.size());
+        for(String aspect : iter1){
+            double aspectProb = calProbability(aspect, sentence);
+            if(aspectProb > max && aspectProb != 0.0){
+                max = aspectProb;
+                prediction = aspect;
+            }
+        }
+        
+        if(prediction.equals("all")){
+            List<String> iter2 = aspects.subList(0, aspects.size()-2);
+            
+            max = Double.NEGATIVE_INFINITY;
+            for(String aspect : iter2){
+                double aspectProb = calProbability(aspect, sentence);
+                if(aspectProb > max && aspectProb != 0.0){
+                    max = aspectProb;
+                    prediction = aspect;
+                }
+            }
+        }
+        
+        return new NaiveBayesResult(prediction, max);
+    }
+
+    
 }
