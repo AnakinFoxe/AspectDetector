@@ -202,7 +202,7 @@ public class AspectParser {
             String trainSetPath,
             String ngramsPath) 
             throws IOException {
-        System.out.print("[W=" + W.toString() + ",N=" + N.toString() + "]");
+        System.out.print("[W" + W.toString() + "_N" + N.toString() + "]");
         
         // construct new frequency map and aspect sentences
         HashMap<String, List<Integer>> freqMap = new HashMap<>();

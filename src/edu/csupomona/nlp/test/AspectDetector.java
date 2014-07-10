@@ -91,13 +91,14 @@ public class AspectDetector {
                 map.put(items[0], count);
             }
             
-            System.out.print(":");
+            System.out.print(",");
             for (String key : map.keySet()) {
 //                System.out.println(key + ": " 
 //                        + map.get(key)[1] + "/"
 //                        + map.get(key)[0] + " = "
 //                        + (double)map.get(key)[1]/map.get(key)[0]);
-                System.out.print((double)map.get(key)[1]/map.get(key)[0] + ",");
+                System.out.print(map.get(key)[1] + "," 
+                        + (double)map.get(key)[1]/map.get(key)[0] + ",");
             }
             System.out.print("\n");
         }
