@@ -91,19 +91,22 @@ public class AspectDetector {
                 map.put(items[0], count);
             }
             
+            System.out.print(":");
             for (String key : map.keySet()) {
-                System.out.println(key + ": " 
-                        + map.get(key)[1] + "/"
-                        + map.get(key)[0] + " = "
-                        + (double)map.get(key)[1]/map.get(key)[0]);
+//                System.out.println(key + ": " 
+//                        + map.get(key)[1] + "/"
+//                        + map.get(key)[0] + " = "
+//                        + (double)map.get(key)[1]/map.get(key)[0]);
+                System.out.print((double)map.get(key)[1]/map.get(key)[0] + ",");
             }
+            System.out.print("\n");
         }
         
         
     }
     
     public static void main(String[] args) throws IOException {
-        for (int i=1; i<64; i*=2) {
+        for (int i=1; i<64; i++) {
             AspectDetector ad = new AspectDetector();
             // collect n-gram information
             ad.collectNGram(i);
@@ -114,5 +117,9 @@ public class AspectDetector {
             // test on 
             ad.testNB();
         }
+        
+//        AspectDetector ad = new AspectDetector();
+//        ad.collectNGram(63);
+        
     }
 }
