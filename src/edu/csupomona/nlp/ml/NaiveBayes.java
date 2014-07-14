@@ -39,7 +39,7 @@ public class NaiveBayes {
     private final Stopword sw;
     
     public NaiveBayes() {
-        sw = new Stopword("E");
+        sw = new Stopword("en");
         
         freqMap = new ArrayList<>();
         wN = new ArrayList<>();

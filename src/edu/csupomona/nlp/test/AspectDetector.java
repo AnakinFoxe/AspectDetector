@@ -42,11 +42,11 @@ public class AspectDetector {
 
         // window size 3
         if ((operation & 1) != 0) 
-            ap.parse(3, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
+            ap.parse(12, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
         if ((operation & 2) != 0)
-            ap.parse(3, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
+            ap.parse(12, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
         if ((operation & 4) != 0)
-            ap.parse(3, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
+            ap.parse(12, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
 
         // window size 999
         if ((operation & 8) != 0)
@@ -107,7 +107,7 @@ public class AspectDetector {
     }
     
     public static void main(String[] args) throws IOException {
-        for (int i=1; i<64; i++) {
+        for (int i=1; i<64; i*=2) {
             AspectDetector ad = new AspectDetector();
             // collect n-gram information
             ad.collectNGram(i);

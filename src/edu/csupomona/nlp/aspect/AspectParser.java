@@ -48,7 +48,7 @@ public class AspectParser {
         
         this.ngramParser = new NGramParser();
         
-        this.sw = new Stopword("E");
+        this.sw = new Stopword("en");
     }
     
     /**

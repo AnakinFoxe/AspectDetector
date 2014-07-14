@@ -89,7 +89,7 @@ public class WekaClassifiers {
 		aspectWordList.add("screen");
 		
 		// Stopwords init
-		sw = new Stopword("E");
+		sw = new Stopword("en");
 		
 		// counter init
 		counter = new int[4];
