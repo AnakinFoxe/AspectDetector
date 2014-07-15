@@ -6,12 +6,16 @@
 
 package edu.csupomona.nlp.test;
 
+import edu.csupomona.nlp.tool.crawler.Amazon;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -42,12 +46,23 @@ public class Prepare {
         HashMap<String, String> products = 
                 prep.readProducts(path + "product_id.txt");
         
+        Amazon am = new Amazon();
+        
         for (String productId : products.keySet()) {
-//            String newFolder = path + products.get(productId) + "/";
-//            
-//            new File(newFolder).mkdir();
-//            
-//            String 
+            String newFolder = path + products.get(productId) + "/";
+            
+            new File(newFolder).mkdir();
+            
+            List<String> reviews = am.crawl(productId);
+            Integer idx = 0;
+            for (String review : reviews) {
+                FileWriter fw = new FileWriter(newFolder + idx.toString() + ".txt");
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(review + "\n");
+                bw.close();
+                
+                idx++;
+            }
             
         }
     }
