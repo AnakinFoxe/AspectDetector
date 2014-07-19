@@ -17,36 +17,8 @@ import java.util.List;
  */
 public class NGramParser {
     
-    private final NGram ngram;
-    
-    // tuning parameters
-    private Integer N;      // n of n-gram
-    private Integer W;      // window size of n-gram parsing
-    
     public NGramParser() {
-        ngram = new NGram(1);
         
-        // init parameters
-        this.N = 1;
-        this.W = 3;
-    }
-
-    public Integer getN() {
-        return N;
-    }
-
-    public void setN(Integer N) {
-        this.N = N;
-        
-        ngram.setN(N);
-    }
-
-    public Integer getW() {
-        return W;
-    }
-
-    public void setW(Integer W) {
-        this.W = W;
     }
     
     private void updateFreqMap(Integer aspectIdx, Integer nAspect,
@@ -71,8 +43,8 @@ public class NGramParser {
         
     }
     
-    public void parseNGram(List<String> words, 
-            List<List<String>> aspectWords,
+    public void parseNGram(Integer W, Integer N, 
+            List<String> words, List<List<String>> aspectWords,
             HashMap<String, List<Integer>> frequencyMap,
             int[] aspectSentences) {
         int begin = 0;
@@ -91,13 +63,13 @@ public class NGramParser {
                     
                     // boundary of the window area
                     int pos = words.indexOf(aspectWord);
-                    begin = ((pos - this.W) > 0 ? pos - this.W : 0);
-                    end = ((pos + this.W) < words.size() ? 
-                            pos + this.W : words.size()-1);
+                    begin = ((pos - W) > 0 ? pos - W : 0);
+                    end = ((pos + W) < words.size() ? 
+                            pos + W : words.size()-1);
                     
                     // extract n-gram within the window
                     HashMap<String, Integer> map = new HashMap<>();
-                    ngram.updateNGram(map, words.subList(begin, end));
+                    NGram.updateNGram(N, map, words.subList(begin, end));
                     
                     // update the frequency map
                     updateFreqMap(i, aspectWords.size(), 
@@ -108,13 +80,13 @@ public class NGramParser {
             
         // extract the before window part of sentence 
         HashMap<String, Integer> map = new HashMap<>();
-        ngram.updateNGram(map, words.subList(0, begin));
+        NGram.updateNGram(N, map, words.subList(0, begin));
         updateFreqMap(aspectWords.size()-1, aspectWords.size(), 
                 map, frequencyMap);
         
         // extract the after window part of sentence
         map = new HashMap<>();
-        ngram.updateNGram(map, words.subList(end, words.size()));
+        NGram.updateNGram(N, map, words.subList(end, words.size()));
         updateFreqMap(aspectWords.size()-1, aspectWords.size(), 
                 map, frequencyMap);
         

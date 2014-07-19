@@ -195,12 +195,11 @@ public class NaiveBayes {
                 
                 // get n-gram from the sentence
                 HashMap<String, Integer> map = new HashMap<>();
-                NGram ng = new NGram(N);
                 if (N == 1) {
                     String[] trimWords = sw.rmStopword(words);
-                    ng.updateNGram(map, trimWords);
+                    NGram.updateNGram(N, map, trimWords);
                 } else 
-                    ng.updateNGram(map, words);
+                    NGram.updateNGram(N, map, words);
                 
                 // add probability for each n-gram
                 for (String ngram : map.keySet()) 

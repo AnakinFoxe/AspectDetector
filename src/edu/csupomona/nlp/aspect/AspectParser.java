@@ -123,7 +123,8 @@ public class AspectParser {
                 "( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
     }
     
-    private void parseFile(File file, HashMap<String, List<Integer>> freqMap,
+    private void parseFile(Integer W, Integer N,
+            File file, HashMap<String, List<Integer>> freqMap,
             int[] aspectSentences) 
             throws FileNotFoundException, IOException {
         // read the file
@@ -150,12 +151,13 @@ public class AspectParser {
                             Arrays.asList(adjustedSentence.split(" +")));
                     
                     // remove stopwords for unigram
-                    if (ngramParser.getN() == 1)
+                    if (N == 1)
                         words = sw.rmStopword(words);
                     
                     // parse n-gram
                     if (words.size() > 0) 
-                        ngramParser.parseNGram(words,
+                        ngramParser.parseNGram(W, N,
+                                words,
                                 this.aspectWords,
                                 freqMap,
                                 aspectSentences);
@@ -210,14 +212,10 @@ public class AspectParser {
         // load aspect related words
         int[] aspectSentences = loadAspects(aspectsPath);
         
-        // setup parameters
-        this.ngramParser.setN(N);
-        this.ngramParser.setW(W);
-        
         // for each file in training set path
         File[] files = new File(trainSetPath).listFiles();
         for (File file : files) {
-            parseFile(file, freqMap, aspectSentences);
+            parseFile(W, N, file, freqMap, aspectSentences);
         }
         
         // write aspect sentences count
