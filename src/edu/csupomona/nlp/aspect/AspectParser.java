@@ -6,6 +6,8 @@
 
 package edu.csupomona.nlp.aspect;
 
+import edu.csupomona.nlp.util.SentenceDetector;
+import edu.csupomona.nlp.util.Stemmer;
 import edu.csupomona.nlp.util.Stopword;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,6 +38,7 @@ public class AspectParser {
     
     // break iterator (not very accurate?)
     private final BreakIterator breakIter;
+    private final SentenceDetector sentDect;
     
     // n-gram parser
     private final NGramParser ngramParser;
@@ -43,12 +46,17 @@ public class AspectParser {
     // stopwords removal
     private final Stopword sw;
     
+    // stemming
+    private final Stemmer st;
+    
     public AspectParser() {
         this.breakIter = BreakIterator.getSentenceInstance(Locale.US);
         
         this.ngramParser = new NGramParser();
         
         this.sw = new Stopword("en");
+        this.st = new Stemmer("en");
+        sentDect = new SentenceDetector();
     }
     
     /**
@@ -135,13 +143,10 @@ public class AspectParser {
             // parse each line in the file
             while ((text = br.readLine()) != null) {
                 // split the reviews into sentences
-                breakIter.setText(text);
-                int start = breakIter.first();
+                List<String> sentences = sentDect.simple(text);
+
                 // loop through each sentence
-                for (int end = breakIter.next(); end != BreakIterator.DONE;
-                        start = end, end = breakIter.next()) {
-                    String sentence = text.substring(start,end);
-                    
+                for (String sentence : sentences) {
                     // a little preprocessing
                     String adjustedSentence = adjustSent(sentence);
                     adjustedSentence = adjustedSentence.toLowerCase();
@@ -153,6 +158,10 @@ public class AspectParser {
                     // remove stopwords for unigram
                     if (N == 1)
                         words = sw.rmStopword(words);
+                    
+                    // stemming
+                    // TODO: somehow decreased performance greatly
+//                    words = st.stemWords(words);
                     
                     // parse n-gram
                     if (words.size() > 0) 

@@ -41,11 +41,11 @@ public class AspectDetector {
 
         // window size 3
         if ((operation & 1) != 0) 
-            ap.parse(12, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
+            ap.parse(3, 1, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // unigram
         if ((operation & 2) != 0)
-            ap.parse(12, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
+            ap.parse(3, 2, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // bigram
         if ((operation & 4) != 0)
-            ap.parse(12, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
+            ap.parse(3, 3, PATH_ASPECT, PATH_TRAIN, PATH_NGRAM);   // trigram
 
         // window size 999
         if ((operation & 8) != 0)
