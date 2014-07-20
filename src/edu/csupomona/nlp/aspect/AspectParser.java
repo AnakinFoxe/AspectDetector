@@ -6,43 +6,19 @@
 
 package edu.csupomona.nlp.aspect;
 
-import edu.csupomona.nlp.util.SentenceDetector;
+import edu.csupomona.nlp.util.NGram;
 import edu.csupomona.nlp.util.Stemmer;
 import edu.csupomona.nlp.util.Stopword;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 /**
  *
  * @author Xing
  */
 public class AspectParser {
-    
-    // list contains user defined aspects
-    private List<String> aspects;
-    
-    // list contains user defined words related to each aspect
-    private List<List<String>> aspectWords;  
-    
-    // break iterator (not very accurate?)
-    private final BreakIterator breakIter;
-    private final SentenceDetector sentDect;
-    
-    // n-gram parser
-    private final NGramParser ngramParser;
-    
     // stopwords removal
     private final Stopword sw;
     
@@ -50,75 +26,86 @@ public class AspectParser {
     private final Stemmer st;
     
     public AspectParser() {
-        this.breakIter = BreakIterator.getSentenceInstance(Locale.US);
-        
-        this.ngramParser = new NGramParser();
-        
+
         this.sw = new Stopword("en");
         this.st = new Stemmer("en");
-        sentDect = new SentenceDetector();
+        
     }
     
-    /**
-     * Get aspect words from the aspect file.
-     * Each word should possess a single line
-     * @param file          Aspect file containing aspect related words
-     * @return              List of aspect words
-     * @throws IOException 
-     */
-    private List<String> getAspectWords(File file) throws IOException{
-        FileReader fr = new FileReader(file);
-        List<String> words;
-        try (BufferedReader br = new BufferedReader(fr)) {
-            String word;
-            words = new ArrayList<>();
-            while((word = br.readLine())!=null){
-                word = word.trim(); // remove whitespace
-                if(!word.isEmpty()){
-                    words.add(word);
+    
+    private void updateFreqMap(Integer aspectIdx, Integer nAspect,
+            HashMap<String, Integer> map,
+            HashMap<String, List<Integer>> frequencyMap) {
+        for (String key : map.keySet()) {
+            List<Integer> frequency = new ArrayList<>();
+            for (int idx = 0; idx < nAspect; idx++) {
+                // retrieve the old count
+                int count = 0;
+                if (frequencyMap.containsKey(key))
+                    count = frequencyMap.get(key).get(idx);
+                
+                // update new count
+                if (idx != aspectIdx)
+                    frequency.add(count);
+                else
+                    frequency.add(count + map.get(key));
+            }
+            frequencyMap.put(key, frequency);
+        }
+        
+    }
+    
+    private void parseNGram(Integer W, Integer N, 
+            List<String> words, List<List<String>> aspectWords,
+            HashMap<String, List<Integer>> frequencyMap,
+            int[] aspectSentences) {
+        int begin = 0;
+        int end = 0;    // when sentence contains no aspect words
+        boolean hasAspectWord = false;
+        
+        // search through all the aspects (neglacting "others")
+        for (int i = 0; i < aspectWords.size()-1; i++) {
+            // search through all aspect words for each aspect
+            for (int j = 0; j < aspectWords.get(i).size(); j++) {
+                String aspectWord = aspectWords.get(i).get(j);
+                if (words.contains(aspectWord)) {
+                    // update aspect sentences count
+                    hasAspectWord = true;
+                    aspectSentences[i]++;
+                    
+                    // boundary of the window area
+                    int pos = words.indexOf(aspectWord);
+                    begin = ((pos - W) > 0 ? pos - W : 0);
+                    end = ((pos + W) < words.size() ? 
+                            pos + W : words.size()-1);
+                    
+                    // extract n-gram within the window
+                    HashMap<String, Integer> map = new HashMap<>();
+                    NGram.updateNGram(N, map, words.subList(begin, end));
+                    
+                    // update the frequency map
+                    updateFreqMap(i, aspectWords.size(), 
+                            map, frequencyMap);
                 }
             }
         }
-        
-        return words;
-    }
-    
-    /**
-     * Load all aspect and related words defined by user
-     * @param path          Path to the folder contains aspect files
-     * @throws IOException 
-     */
-    private int[] loadAspects(String path) 
-            throws IOException{
-        // drop old list and construct new
-        this.aspects = new ArrayList<>();
-        this.aspectWords = new ArrayList<>();
-        
-        File[] files = new File(path).listFiles();
-        Arrays.sort(files);
-        
-//        System.out.println("Loading Aspects:");
-        for (File file : files) {
-            String aspect = file.getName();
-//            System.out.println(aspect);
             
-            // get user defined words for each aspect
-            List<String> words = getAspectWords(file);
-            
-            // add to specific list
-            this.aspectWords.add(words);
-            this.aspects.add(aspect);
-        }
+        // extract the before window part of sentence 
+        HashMap<String, Integer> map = new HashMap<>();
+        NGram.updateNGram(N, map, words.subList(0, begin));
+        updateFreqMap(aspectWords.size()-1, aspectWords.size(), 
+                map, frequencyMap);
         
-        // add a list for aspect not defined by user
-        List<String> others = new ArrayList<>();
-        others.add("other");
-        this.aspectWords.add(others);
+        // extract the after window part of sentence
+        map = new HashMap<>();
+        NGram.updateNGram(N, map, words.subList(end, words.size()));
+        updateFreqMap(aspectWords.size()-1, aspectWords.size(), 
+                map, frequencyMap);
         
-        // create aspect sentence
-        return new int[aspectWords.size()];
+        // no aspect word was found
+        if (!hasAspectWord) 
+            aspectSentences[aspectSentences.length-1]++;
     }
-    
     
     
     /**
@@ -131,110 +118,38 @@ public class AspectParser {
                 "( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
     }
     
-    private void parseFile(Integer W, Integer N,
-            File file, HashMap<String, List<Integer>> freqMap,
-            int[] aspectSentences) 
-            throws FileNotFoundException, IOException {
-        // read the file
-        FileReader fr = new FileReader(file);
-        try (BufferedReader br = new BufferedReader(fr)) {
-            String text;
-            
-            // parse each line in the file
-            while ((text = br.readLine()) != null) {
-                // split the reviews into sentences
-                List<String> sentences = sentDect.simple(text);
+    public void parseAspect(String sentence, Integer W, Integer N,
+            final List<List<String>> aspectWords,
+            HashMap<String, List<Integer>> freqMap,
+            int[] aspectSentences) {
+        // a little preprocessing
+        String adjustedSentence = adjustSent(sentence);
+        adjustedSentence = adjustedSentence.toLowerCase();
 
-                // loop through each sentence
-                for (String sentence : sentences) {
-                    // a little preprocessing
-                    String adjustedSentence = adjustSent(sentence);
-                    adjustedSentence = adjustedSentence.toLowerCase();
-                    
-                    // tokenize
-                    List<String> words = new ArrayList<>(
-                            Arrays.asList(adjustedSentence.split(" +")));
-                    
-                    // remove stopwords for unigram
-                    if (N == 1)
-                        words = sw.rmStopword(words);
-                    
-                    // stemming
-                    // TODO: somehow decreased performance greatly
+        // tokenize
+        List<String> words = new ArrayList<>(
+                Arrays.asList(adjustedSentence.split(" +")));
+
+        // remove stopwords for unigram
+        if (N == 1)
+            words = sw.rmStopword(words);
+
+        // stemming
+        // TODO: somehow decreased performance greatly
 //                    words = st.stemWords(words);
-                    
-                    // parse n-gram
-                    if (words.size() > 0) 
-                        ngramParser.parseNGram(W, N,
-                                words,
-                                this.aspectWords,
-                                freqMap,
-                                aspectSentences);
-                }
-                
-            }
-        }
-    }
-    
-    private void writeAspectSent(int[] aspectSentences,
-                            String filename, 
-                            boolean append) throws IOException {
-        FileWriter writer = new FileWriter(filename, append);
-        try (BufferedWriter writerBW = new BufferedWriter(writer)) {
-            int i;
-            for (i = 0; i < aspectSentences.length-1; i++) {
-                writerBW.write(this.aspects.get(i) + ":" 
-                        + aspectSentences[i] + "\n");
-            }
-            writerBW.write("others:" + aspectSentences[i] + "\n");
-        }
-    }
-    
-    
-    private void writeFreqMap(HashMap<String, List<Integer>> freqMap,
-                            String filename, 
-                            boolean append) throws IOException {
-        FileWriter writer = new FileWriter(filename, append);
-        try (BufferedWriter writerBW = new BufferedWriter(writer)) {
-            String ngram;
-            
-            Iterator<String> keyIter = freqMap.keySet().iterator();
-            while (keyIter.hasNext()) {
-                ngram = keyIter.next();
-                String freqList = freqMap.get(ngram).toString();
-                writerBW.write(ngram + ","
-                        + freqList.substring(1, freqList.length()-1) + "\n");
-            }
-        }
-    }
-    
-    public HashMap<String, List<Integer>> parse(Integer W, Integer N,
-            String aspectsPath, 
-            String trainSetPath,
-            String ngramsPath) 
-            throws IOException {
-        System.out.print("[W" + W.toString() + "_N" + N.toString() + "]");
-        
-        // construct new frequency map and aspect sentences
-        HashMap<String, List<Integer>> freqMap = new HashMap<>();
 
-        // load aspect related words
-        int[] aspectSentences = loadAspects(aspectsPath);
-        
-        // for each file in training set path
-        File[] files = new File(trainSetPath).listFiles();
-        for (File file : files) {
-            parseFile(W, N, file, freqMap, aspectSentences);
-        }
-        
-        // write aspect sentences count
-        String asFile = ngramsPath + "aspectSentences.txt";
-        writeAspectSent(aspectSentences, asFile, false);
-        
-        // write frequency map to file
-        String ngramFile = ngramsPath + "ngram_W" + W + "_N" + N + ".txt";
-        writeFreqMap(freqMap, ngramFile, false);
-        
-        return freqMap;
+        // parse n-gram
+        if (words.size() > 0) 
+            parseNGram(W, N,
+                    words,
+                    aspectWords,
+                    freqMap,
+                    aspectSentences);
     }
+    
+    
+    
+    
+    
+    
 }
