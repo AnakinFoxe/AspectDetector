@@ -24,10 +24,15 @@ import java.util.regex.Pattern;
  */
 public class NaiveBayes {
     
-    private final List<HashMap<String, List<Integer>>> freqMap;
-    private final List<List<Integer>> wN;
+    private class TrainData {
+        HashMap<String, List<Integer>> freqMap;
+        int[] aspectWordSum;
+        Integer W;
+        Integer N;
+
+    }
     
-    private List<int[]> aspectWordSum;
+    private final List<TrainData> trainData;
     
     private List<String> aspects;
     private HashMap<String, Integer> aspectSentences;
@@ -41,12 +46,7 @@ public class NaiveBayes {
     public NaiveBayes() {
         sw = new Stopword("en");
         
-        freqMap = new ArrayList<>();
-        wN = new ArrayList<>();
-        
-        aspects = new ArrayList<>();
-        aspectWordSum = new ArrayList<>();
-//        aspectSentences = new HashMap<>();
+        trainData = new ArrayList<>();
     }
     
     private HashMap<String, List<Integer>> readNGram(File file) 
@@ -98,6 +98,9 @@ public class NaiveBayes {
             throws IOException{
         FileReader fr = new FileReader(file);
         
+        if (this.aspects == null)
+            aspects = new ArrayList<>();
+        
         Integer countAll = 0;
         String line;
         HashMap<String, Integer> map = new HashMap<>();
@@ -147,13 +150,21 @@ public class NaiveBayes {
         File[] files = new File(ngramPath).listFiles();
         
         for (File file : files) {
+            TrainData data = new TrainData();
             
             if (file.getName().contains("ngram")) {
                 // parse the ngram files
-                freqMap.add(readNGram(file));
+                data.freqMap = readNGram(file);
                 
                 // parse the name of the files to obtain W and N info
-                wN.add(readWN(file.getName()));
+                Matcher matcher = ptnWN.matcher(file.getName());
+                if (matcher.matches()) {
+                    data.W = Integer.valueOf(matcher.group(1));
+                    data.N = Integer.valueOf(matcher.group(2));
+                }
+                
+                // add one training set results into list
+                trainData.add(data);
             }
             else 
                 // parse the aspect sentences count
@@ -163,9 +174,52 @@ public class NaiveBayes {
         aspectSentTotal = aspectSentences.get("all")
                 + aspectSentences.get("others");
         
-        for (int i=0; i<freqMap.size(); ++i) 
-            aspectWordSum.add(calAspectWordSum(freqMap.get(i)));
+        for (TrainData data : trainData)
+            data.aspectWordSum = calAspectWordSum(data.freqMap);
         
+    }
+    
+    public void train(List<String> aspects, 
+            HashMap<String, List<Integer>> freqMap, 
+            Integer W, Integer N, int[] aspectSentences) {
+        TrainData data = new TrainData();
+        
+        data.freqMap = freqMap;
+        for (String key : data.freqMap.keySet()) {
+            List<Integer> aspectWordNum = data.freqMap.get(key);
+            int sum = 0;
+            for (int i = 0; i < aspectWordNum.size()-1; i++)
+                sum += aspectWordNum.get(i);
+            aspectWordNum.add(sum);
+            data.freqMap.put(key, aspectWordNum);
+        }
+        
+        data.W = W;
+        data.N = N;
+        
+        if (this.aspects == null)
+            this.aspects = new ArrayList<>();
+        
+        this.aspectSentences = new HashMap<>();
+        int sum = 0;
+        for (int i = 0; i < aspects.size(); i++) {
+            this.aspectSentences.put(aspects.get(i), aspectSentences[i]);
+            sum += aspectSentences[i];
+            this.aspects.add(aspects.get(i));
+        }
+        
+        this.aspectSentences.put("others", 
+                aspectSentences[aspectSentences.length-1]);
+        this.aspects.add("others");
+        this.aspectSentences.put("all", sum);
+        this.aspects.add("all");
+        
+        aspectSentTotal = this.aspectSentences.get("all")
+                + this.aspectSentences.get("others");
+        
+        data.aspectWordSum = calAspectWordSum(data.freqMap);
+        
+        trainData.add(data);
     }
     
     private double calNGramProb(String ngram, String aspect, Integer N, 
@@ -181,7 +235,7 @@ public class NaiveBayes {
     }
     
     private double calProbability(String aspect, String sentence) {
-        String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+        String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ").toLowerCase();
         String[] words = adjustedSentence.split(" +");
 
         double sentenceProb;
@@ -189,9 +243,8 @@ public class NaiveBayes {
             sentenceProb = Math.log((double)this.aspectSentences.get(aspect) 
                     / this.aspectSentTotal);    // bugfix: add Math.log
             
-            for (int i=0; i<wN.size(); i++) {
-//                int W = wN.get(i).get(0);
-                int N = wN.get(i).get(1);
+            for (TrainData data : trainData) {
+                int N = data.N;
                 
                 // get n-gram from the sentence
                 HashMap<String, Integer> map = new HashMap<>();
@@ -205,8 +258,8 @@ public class NaiveBayes {
                 for (String ngram : map.keySet()) 
                     sentenceProb += 
                             Math.log(calNGramProb(ngram, aspect, N, 
-                                    this.freqMap.get(i),
-                                    this.aspectWordSum.get(i)))
+                                    data.freqMap,
+                                    data.aspectWordSum))
                             * map.get(ngram);
             }
         }else{

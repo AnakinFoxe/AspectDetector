@@ -199,6 +199,8 @@ public class AspectDetector {
         String ngramFile = ngramsPath + "ngram_W" + W + "_N" + N + ".txt";
         writeFreqMap(freqMap, ngramFile, false);
         
+        nb.train(aspects, freqMap, W, N, aspectSentences);
+        
         return freqMap;
     }
     
@@ -280,7 +282,7 @@ public class AspectDetector {
             ad.collectNGram(i);
 
             // train a naive bayes classifier
-            ad.trainNB();
+//            ad.trainNB();
 
             // test on 
             ad.testNB();

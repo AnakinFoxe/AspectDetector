@@ -136,7 +136,7 @@ public class AspectParser {
 
         // stemming
         // TODO: somehow decreased performance greatly
-//                    words = st.stemWords(words);
+//        words = st.stemWords(words);
 
         // parse n-gram
         if (words.size() > 0) 
