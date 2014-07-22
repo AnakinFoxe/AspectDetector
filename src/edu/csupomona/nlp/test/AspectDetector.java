@@ -206,8 +206,9 @@ public class AspectDetector {
     
     public void collectNGram(int operation) throws IOException {
         File[] files = new File(PATH_NGRAM).listFiles();
-        for (File file : files)
-            file.delete();
+        if (files != null)
+            for (File file : files)
+                file.delete();
 
         // window size 3
         if ((operation & 1) != 0) 
@@ -231,7 +232,9 @@ public class AspectDetector {
         nb.train(PATH_NGRAM);
     }
     
-    public void testNB() throws FileNotFoundException, IOException {
+    public HashMap<String, List<String>> testNB() 
+            throws FileNotFoundException, IOException {
+        HashMap<String, List<String>> mapAspectSents = new HashMap<>();
         File[] files = new File(PATH_TEST).listFiles();
         
         for (File file : files) {
@@ -247,6 +250,16 @@ public class AspectDetector {
                 
 //                System.out.println(items[0] + "===>" + label);
                 
+                // repare aspect <-> sentences mapping
+                List<String> sents;
+                if (mapAspectSents.containsKey(label))
+                    sents = mapAspectSents.get(label);
+                else
+                    sents = new ArrayList<>();
+                sents.add(items[1]);
+                mapAspectSents.put(label, sents);
+                
+                // for report display
                 int[] count;
                 if (map.containsKey(items[0])) {
                     count = map.get(items[0]);
@@ -260,6 +273,7 @@ public class AspectDetector {
                 map.put(items[0], count);
             }
             
+            // display results
             System.out.print(",");
             for (String key : map.keySet()) {
 //                System.out.println(key + ": " 
@@ -272,7 +286,7 @@ public class AspectDetector {
             System.out.print("\n");
         }
         
-        
+        return mapAspectSents;
     }
     
     public static void main(String[] args) throws IOException {

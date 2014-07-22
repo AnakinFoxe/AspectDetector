@@ -114,8 +114,10 @@ public class AspectParser {
      * @return 
      */
     private String adjustSent(String sentence) {
-        return sentence.replaceAll(
-                "( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+//        return sentence.replaceAll(
+//                "( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+        String sent = sentence.replaceAll("[^a-zA-Z0-9]+", " ");
+        return sent.replaceAll("[ ]+", " ");
     }
     
     public void parseAspect(String sentence, Integer W, Integer N,
@@ -123,12 +125,11 @@ public class AspectParser {
             HashMap<String, List<Integer>> freqMap,
             int[] aspectSentences) {
         // a little preprocessing
-        String adjustedSentence = adjustSent(sentence);
-        adjustedSentence = adjustedSentence.toLowerCase();
+        String adjustedSentence = adjustSent(sentence).toLowerCase();
 
         // tokenize
         List<String> words = new ArrayList<>(
-                Arrays.asList(adjustedSentence.split(" +")));
+                Arrays.asList(adjustedSentence.split(" ")));
 
         // remove stopwords for unigram
         if (N == 1)

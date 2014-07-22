@@ -234,9 +234,21 @@ public class NaiveBayes {
         return (double)(aspectCount + 1.0) / (total + v);
     }
     
+    /**
+     * Remove useless symbols (To Be Replaced In Future)
+     * @param sentence
+     * @return 
+     */
+    private String adjustSent(String sentence) {
+//        return sentence.replaceAll(
+//                "( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ");
+        String sent = sentence.replaceAll("[^a-zA-Z0-9]+", " ");
+        return sent.replaceAll("[ ]+", " ");
+    }
+    
     private double calProbability(String aspect, String sentence) {
-        String adjustedSentence = sentence.replaceAll("( +: ?| +\\*+ ?)|[\\[\\] \\(\\)\\.,;!\\?\\+-]", " ").toLowerCase();
-        String[] words = adjustedSentence.split(" +");
+        String adjustedSentence = adjustSent(sentence).toLowerCase();
+        String[] words = adjustedSentence.split(" ");
 
         double sentenceProb;
         if(words.length > 0){
