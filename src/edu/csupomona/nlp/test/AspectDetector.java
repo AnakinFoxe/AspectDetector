@@ -51,7 +51,7 @@ public class AspectDetector {
     public AspectDetector() {
         nb = new NaiveBayes();
         
-        sentDect = new SentenceDetector();
+        sentDect = new SentenceDetector("en");
         
         ap = new AspectParser();
     }
