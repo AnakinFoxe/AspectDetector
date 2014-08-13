@@ -26,7 +26,8 @@ project-root-directory/
 /build/
 /dist/
 
-/data/
 /lib/
 /nbproject/
 /build.xml
+/target/
+/data/

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.test;
+package edu.csupomona.nlp.aspectdetector;
 
 import edu.csupomona.nlp.tool.crawler.Amazon;
 import java.io.BufferedReader;

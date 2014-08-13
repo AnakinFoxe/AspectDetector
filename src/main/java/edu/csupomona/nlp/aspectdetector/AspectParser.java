@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.aspect;
+package edu.csupomona.nlp.aspectdetector;
 
 import edu.csupomona.nlp.util.NGram;
 import edu.csupomona.nlp.util.Stemmer;

@@ -4,11 +4,10 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.test;
+package edu.csupomona.nlp.aspectdetector;
 
-import edu.csupomona.nlp.aspect.AspectParser;
-import edu.csupomona.nlp.ml.NaiveBayes;
-import edu.csupomona.nlp.ml.NaiveBayesResult;
+import edu.csupomona.nlp.ml.supervised.NaiveBayes;
+import edu.csupomona.nlp.ml.supervised.NaiveBayesResult;
 import edu.csupomona.nlp.util.SentenceDetector;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
