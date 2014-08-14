@@ -171,6 +171,20 @@ public class AspectDetector {
         }
     }
     
+    private List<File> getFiles(String path) throws IOException {
+        List<File> files = new ArrayList<>();
+        
+        File[] candidates = new File(path).listFiles();
+        for (File file : candidates) {
+            if (file.isFile())
+                files.add(file);
+            else
+                files.addAll(getFiles(file.getCanonicalPath()));
+        }
+        
+        return files;
+    }
+    
     public HashMap<String, List<Integer>> parse(Integer W, Integer N,
             String aspectsPath, 
             String trainSetPath,
@@ -185,7 +199,7 @@ public class AspectDetector {
         int[] aspectSentences = loadAspects(aspectsPath);
         
         // for each file in training set path
-        File[] files = new File(trainSetPath).listFiles();
+        List<File> files = getFiles(trainSetPath);
         for (File file : files) {
             parseFile(W, N, file, freqMap, aspectSentences);
         }
@@ -234,7 +248,7 @@ public class AspectDetector {
     public HashMap<String, List<String>> testNB() 
             throws FileNotFoundException, IOException {
         HashMap<String, List<String>> mapAspectSents = new HashMap<>();
-        File[] files = new File(PATH_TEST).listFiles();
+        List<File> files = getFiles(PATH_TEST);
         
         for (File file : files) {
             FileReader fr = new FileReader(file);
@@ -287,6 +301,36 @@ public class AspectDetector {
         
         return mapAspectSents;
     }
+    
+    public HashMap<String, List<String>> classifyNB() 
+            throws FileNotFoundException, IOException {
+        HashMap<String, List<String>> mapAspectSents = new HashMap<>();
+        List<File> files = getFiles(PATH_TEST);
+        
+        for (File file : files) {
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                NaiveBayesResult nbRet = nb.classify(line.trim());
+                String label = "[" + nbRet.getLabel() + "]";
+                
+//                System.out.println(items[0] + "===>" + label);
+                
+                // repare aspect <-> sentences mapping
+                List<String> sents;
+                if (mapAspectSents.containsKey(label))
+                    sents = mapAspectSents.get(label);
+                else
+                    sents = new ArrayList<>();
+                sents.add(line.trim());
+                mapAspectSents.put(label, sents);
+            }
+        }
+        
+        return mapAspectSents;
+    }
+    
     
     public static void main(String[] args) throws IOException {
         for (int i=1; i<64; i*=2) {
