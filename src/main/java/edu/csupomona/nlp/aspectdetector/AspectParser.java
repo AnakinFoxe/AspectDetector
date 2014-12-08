@@ -58,7 +58,7 @@ public class AspectParser {
     private void parseNGram(Integer W, Integer N, 
             List<String> words, List<List<String>> aspectWords,
             HashMap<String, List<Integer>> frequencyMap,
-            int[] aspectSentences) {
+            Long[] aspectSentences) {
         int begin = 0;
         int end = 0;    // when sentence contains no aspect words
         boolean hasAspectWord = false;
@@ -123,7 +123,7 @@ public class AspectParser {
     public void parseAspect(String sentence, Integer W, Integer N,
             final List<List<String>> aspectWords,
             HashMap<String, List<Integer>> freqMap,
-            int[] aspectSentences) {
+            Long[] aspectSentences) {
         // a little preprocessing
         String adjustedSentence = adjustSent(sentence).toLowerCase();
 
