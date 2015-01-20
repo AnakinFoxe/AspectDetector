@@ -124,19 +124,11 @@ public class AspectDetector {
      * @param aspects       List of aspects
      * @return
      */
-    private Long[] loadAspects(List<String> aspects) {
-        // drop old list and construct new
-        this.aspects = new ArrayList<>();
-        this.aspectWords = new ArrayList<>();
+    private Long[] loadAspects(List<String> aspects, List<List<String>> aspectWords) {
+        // drop old list and copy new
+        this.aspects = new ArrayList<>(aspects);
+        this.aspectWords = new ArrayList<>(aspectWords);
 
-        for (String aspect : aspects) {
-            this.aspects.add(aspect);
-
-            // currently only consider one word for each aspect
-            List<String> words = new ArrayList<>();
-            words.add(aspect);
-            this.aspectWords.add(words);
-        }
 
         // add a list for aspect not defined by user
         // NOTE: "others" has to be at the tail of the list
@@ -262,12 +254,53 @@ public class AspectDetector {
         return freqMap;
     }
 
-    public Long[] parse(Integer W, Integer N, List<String> aspects,
-                    String trainSetPath,
-                    HashMap<String, List<Integer>> freqMap)
+    /**
+     * Parse files and obtain N-gram information using aspect list and aspect word list
+     * @param W                     Window size
+     * @param N                     N of N-gram
+     * @param aspects               aspect list
+     * @param aspectWords           aspect word list
+     * @param trainSetPath          Path to folder contains training data
+     * @param freqMap               frequency map containing N-gram information
+     * @return
+     * @throws IOException
+     */
+    public Long[] parse(Integer W, Integer N,
+                        List<String> aspects,
+                        List<List<String>> aspectWords,
+                        String trainSetPath,
+                        HashMap<String, List<Integer>> freqMap)
             throws IOException {
         // load aspect related words
-        Long[] aspectSentences = loadAspects(aspects);
+        Long[] aspectSentences = loadAspects(aspects, aspectWords);
+
+        // for each file in training set path
+        List<File> files = getFiles(trainSetPath);
+        for (File file : files) {
+            parseFile(W, N, file, freqMap, aspectSentences);
+        }
+
+        return aspectSentences;
+    }
+
+
+    /**
+     * Parse files and obtain N-gram information using aspect path for aspect list
+     * @param W                     Window size
+     * @param N                     N of N-gram
+     * @param aspectsPath           Path to folder contains aspects
+     * @param trainSetPath          Path to folder contains training data
+     * @param freqMap               frequency map containing N-gram information
+     * @return
+     * @throws IOException
+     */
+    public Long[] parse(Integer W, Integer N,
+                        String aspectsPath,
+                        String trainSetPath,
+                        HashMap<String, List<Integer>> freqMap)
+            throws IOException {
+        // load aspect related words
+        Long[] aspectSentences = loadAspects(aspectsPath);
 
         // for each file in training set path
         List<File> files = getFiles(trainSetPath);
