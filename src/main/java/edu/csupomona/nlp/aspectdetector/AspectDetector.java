@@ -95,6 +95,9 @@ public class AspectDetector {
         
 //        System.out.println("Loading Aspects:");
         for (File file : files) {
+            if (file.getName().equals(".DS_Store"))
+                continue;
+
             String aspect = file.getName();
 //            System.out.println(aspect);
             
@@ -142,7 +145,7 @@ public class AspectDetector {
             aspectSentence[idx] = 0L;
         return aspectSentence;
     }
-    
+
     private void parseFile(Integer W, Integer N,
             File file, HashMap<String, List<Integer>> freqMap,
             Long[] aspectSentences)
@@ -158,10 +161,10 @@ public class AspectDetector {
                 List<String> sentences = sentDect.simple(text);
 
                 // loop through each sentence
-                for (String sentence : sentences) 
-                    ap.parseAspect(sentence, W, N, 
+                for (String sentence : sentences)
+                    ap.parseAspect(sentence, W, N,
                             aspectWords, freqMap, aspectSentences);
-                
+
             }
         }
     }

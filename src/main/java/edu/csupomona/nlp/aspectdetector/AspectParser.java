@@ -24,12 +24,15 @@ public class AspectParser {
     
     // stemming
     private final Stemmer st;
+
+    private boolean enableStemmer;
     
     public AspectParser() {
 
         this.sw = new Stopword("en");
         this.st = new Stemmer("en");
-        
+
+        this.enableStemmer = true;
     }
     
     
@@ -68,6 +71,11 @@ public class AspectParser {
             // search through all aspect words for each aspect
             for (int j = 0; j < aspectWords.get(i).size(); j++) {
                 String aspectWord = aspectWords.get(i).get(j);
+
+                // stem the aspect word as well
+                if (enableStemmer)
+                    aspectWord = st.stemWord(aspectWord);
+
                 if (words.contains(aspectWord)) {
                     // update aspect sentences count
                     hasAspectWord = true;
@@ -89,18 +97,25 @@ public class AspectParser {
                 }
             }
         }
-            
-        // extract the before window part of sentence 
-        HashMap<String, Integer> map = new HashMap<>();
-        NGram.updateNGram(N, map, words.subList(0, begin));
-        updateFreqMap(aspectWords.size()-1, aspectWords.size(), 
-                map, frequencyMap);
-        
-        // extract the after window part of sentence
-        map = new HashMap<>();
-        NGram.updateNGram(N, map, words.subList(end, words.size()));
-        updateFreqMap(aspectWords.size()-1, aspectWords.size(), 
-                map, frequencyMap);
+
+        if (hasAspectWord) {
+            // extract the before window part of sentence
+            HashMap<String, Integer> map = new HashMap<>();
+            NGram.updateNGram(N, map, words.subList(0, begin));
+            updateFreqMap(aspectWords.size() - 1, aspectWords.size(),
+                    map, frequencyMap);
+
+            // extract the after window part of sentence
+            map = new HashMap<>();
+            NGram.updateNGram(N, map, words.subList(end, words.size()));
+            updateFreqMap(aspectWords.size() - 1, aspectWords.size(),
+                    map, frequencyMap);
+        } else {
+            HashMap<String, Integer> map = new HashMap<>();
+            NGram.updateNGram(N, map, words);
+            updateFreqMap(aspectWords.size() - 1, aspectWords.size(),
+                    map, frequencyMap);
+        }
         
         // no aspect word was found
         if (!hasAspectWord) 
@@ -136,8 +151,8 @@ public class AspectParser {
             words = sw.rmStopword(words);
 
         // stemming
-        // TODO: somehow decreased performance greatly
-//        words = st.stemWords(words);
+        if (enableStemmer)
+            words = st.stemWords(words);
 
         // parse n-gram
         if (words.size() > 0) 
