@@ -116,7 +116,7 @@ public class AspectDetector {
         this.aspectWords.add(others);
         
         // create aspect sentence
-        Long[] aspectSentence = new Long[aspectWords.size()];
+        Long[] aspectSentence = new Long[this.aspectWords.size()];
         for (int idx =0; idx < aspectSentence.length; ++idx)
             aspectSentence[idx] = 0L;
         return aspectSentence;
@@ -140,7 +140,7 @@ public class AspectDetector {
         this.aspectWords.add(others);
 
         // create aspect sentence
-        Long[] aspectSentence = new Long[aspectWords.size()];
+        Long[] aspectSentence = new Long[this.aspectWords.size()];
         for (int idx =0; idx < aspectSentence.length; ++idx)
             aspectSentence[idx] = 0L;
         return aspectSentence;
