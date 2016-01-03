@@ -4,11 +4,12 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.aspectdetector;
+package edu.cpp.iipl.aspectdetector;
 
-import edu.csupomona.nlp.util.NGram;
-import edu.csupomona.nlp.util.Stemmer;
-import edu.csupomona.nlp.util.Stopword;
+import edu.cpp.iipl.util.NGram;
+import edu.cpp.iipl.util.Stemmer;
+import edu.cpp.iipl.util.Stopword;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

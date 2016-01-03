@@ -4,11 +4,11 @@
  * and open the template in the editor.
  */
 
-package edu.csupomona.nlp.aspectdetector;
+package edu.cpp.iipl.aspectdetector;
 
-import edu.csupomona.nlp.ml.supervised.NaiveBayes;
-import edu.csupomona.nlp.ml.supervised.NaiveBayesResult;
-import edu.csupomona.nlp.util.SentenceDetector;
+import edu.cpp.iipl.ml.supervised.NaiveBayes;
+import edu.cpp.iipl.ml.supervised.NaiveBayesResult;
+import edu.cpp.iipl.util.SentenceDetector;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
